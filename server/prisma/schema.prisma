@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// ==========================================
+// Model: User
+// ==========================================
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(100)
+  email     String   @unique @db.VarChar(255)
+  password  String   @db.VarChar(255)
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+// ==========================================
+// Model: Category
+// ==========================================
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @db.VarChar(100)
+  slug      String    @unique @db.VarChar(120)
+  createdAt DateTime  @default(now())
+
+  products Product[]
+
+  @@map("categories")
+}
+
+// ==========================================
+// Model: Product
+// ==========================================
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(200)
+  slug        String   @unique @db.VarChar(220)
+  description String?  @db.Text
+  image       String?  @db.VarChar(500)
+  categoryId  Int
+  createdAt   DateTime @default(now())
+
+  category Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  galleries Gallery[]
+
+  @@index([categoryId])
+  @@map("products")
+}
+
+// ==========================================
+// Model: CustomOrder
+// ==========================================
+model CustomOrder {
+  id          Int         @id @default(autoincrement())
+  name        String      @db.VarChar(100)
+  email       String      @db.VarChar(255)
+  phone       String      @db.VarChar(20)
+  productType String      @db.VarChar(100)
+  quantity    Int
+  notes       String?     @db.Text
+  fileUrl     String?     @db.VarChar(500)
+  status      OrderStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+
+  @@map("custom_orders")
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+// ==========================================
+// Model: Gallery
+// ==========================================
+model Gallery {
+  id        Int      @id @default(autoincrement())
+  title     String   @db.VarChar(200)
+  image     String   @db.VarChar(500)
+  productId Int
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("galleries")
+}

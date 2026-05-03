@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+
+# Prisma generated
+generated/
+
+# Uploads (opsional - hapus baris ini jika ingin track uploads)
+uploads/products/*
+uploads/orders/*
+!uploads/products/.gitkeep
+!uploads/orders/.gitkeep
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
