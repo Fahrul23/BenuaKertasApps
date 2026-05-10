@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { loginUser } from '@/services/authService'
+import { loginUser, getMe } from '@/services/authService'
 
 // ─── Async Thunk ────────────────────────────────────────────────────
 export const login = createAsyncThunk(
@@ -13,6 +13,20 @@ export const login = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Login gagal. Periksa kembali kredensial Anda.'
+      )
+    }
+  }
+)
+
+export const fetchMe = createAsyncThunk(
+  'auth/fetchMe',
+  async (_, { rejectWithValue }) => {
+    try {
+      const data = await getMe()
+      return data
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Gagal mengambil data user.'
       )
     }
   }
@@ -52,6 +66,19 @@ const authSlice = createSlice({
       .addCase(login.rejected, (state, action) => {
         state.loading = false
         state.error = action.payload
+      })
+      .addCase(fetchMe.pending, (state) => {
+        state.loading = true
+      })
+      .addCase(fetchMe.fulfilled, (state, action) => {
+        state.loading = false
+        state.user = action.payload
+      })
+      .addCase(fetchMe.rejected, (state) => {
+        state.loading = false
+        state.user = null
+        state.token = null
+        localStorage.removeItem('token')
       })
   },
 })

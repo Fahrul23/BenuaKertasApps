@@ -6,6 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import errorHandler from './middleware/errorHandler.js';
+import authRoutes from './routes/auth.routes.js';
 
 // __dirname equivalent untuk ES Module
 const __filename = fileURLToPath(import.meta.url);
@@ -54,13 +55,12 @@ app.get('/api/health', (req, res) => {
 // ==========================================
 // API Routes (placeholder - akan diisi nanti)
 // ==========================================
-// import authRoutes from './routes/auth.js';
 // import categoryRoutes from './routes/category.js';
 // import productRoutes from './routes/product.js';
 // import orderRoutes from './routes/order.js';
 // import galleryRoutes from './routes/gallery.js';
 
-// app.use('/api/auth', authRoutes);
+app.use('/api/v1/auth', authRoutes);
 // app.use('/api/categories', categoryRoutes);
 // app.use('/api/products', productRoutes);
 // app.use('/api/orders', orderRoutes);

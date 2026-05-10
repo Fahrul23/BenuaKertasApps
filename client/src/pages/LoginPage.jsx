@@ -46,7 +46,7 @@ const FeatureBadge = ({ icon: Icon, text, delay }) => (
 export default function LoginPage() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const { loading, error, token } = useSelector((state) => state.auth)
+  const { loading, error, token, user } = useSelector((state) => state.auth)
 
   const [showPassword, setShowPassword] = useState(false)
   const [loginSuccess, setLoginSuccess] = useState(false)
@@ -66,10 +66,14 @@ export default function LoginPage() {
 
   // Redirect jika sudah login
   useEffect(() => {
-    if (token) {
-      navigate('/dashboard', { replace: true })
+    if (token && user) {
+      if (user.role === 'ADMIN') {
+        navigate('/admin', { replace: true })
+      } else {
+        navigate('/home', { replace: true })
+      }
     }
-  }, [token, navigate])
+  }, [token, user, navigate])
 
   // Clear error saat unmount
   useEffect(() => {
@@ -82,8 +86,13 @@ export default function LoginPage() {
     const result = await dispatch(login(data))
     if (login.fulfilled.match(result)) {
       setLoginSuccess(true)
+      const loggedInUser = result.payload.user
       setTimeout(() => {
-        navigate('/dashboard', { replace: true })
+        if (loggedInUser.role === 'ADMIN') {
+          navigate('/admin', { replace: true })
+        } else {
+          navigate('/home', { replace: true })
+        }
       }, 800)
     }
   }

@@ -3,10 +3,11 @@ import nodemailer from 'nodemailer';
 /**
  * Nodemailer transporter menggunakan kredensial dari .env
  */
+console.log('📧 Connecting to mail host:', process.env.MAIL_HOST);
 const transporter = nodemailer.createTransport({
   host: process.env.MAIL_HOST,
   port: Number(process.env.MAIL_PORT),
-  secure: false, // true untuk port 465, false untuk port lainnya
+  secure: false, 
   auth: {
     user: process.env.MAIL_USER,
     pass: process.env.MAIL_PASS,
