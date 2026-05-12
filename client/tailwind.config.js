@@ -48,11 +48,31 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+
+        // ==========================================
+        // Color Palette — Benua Kertas
+        // ==========================================
+        color: {
+          primary: "#5E9434", // Hijau utama (tombol, badge, aksen)
+          dark: "#3E6D30", // Hijau gelap (hover, border)
+          darker: "#154321", // Hijau paling gelap (footer, heading)
+          light: "#E3ECDA", // Hijau muda / background section
+          lighter: "#F1F6E9", // Hijau paling muda / background card, subtle
+          black: "#000000", // Hitam murni
+          gray: "#6D747D", // Abu-abu (teks sekunder, placeholder)
+          white: "#FFFFFF", // Putih murni
+          grad_start: "#4A750C", // Warna awal gradien
+          grad_end: "#8BDB16", // Warna akhir gradien
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      fontFamily: {
+        sans: ["Poppins", "system-ui", "sans-serif"],
+        poppins: ["Poppins", "system-ui", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {

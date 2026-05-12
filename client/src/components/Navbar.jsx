@@ -45,7 +45,7 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-5 lg:gap-8">
             <Link
               to="/home"
-              className="bg-[#3f6d35] text-white px-5 py-2 rounded-lg font-medium transition-all hover:opacity-90 shadow-md text-sm lg:text-base"
+              className="bg-color-dark text-color-white px-5 py-2 rounded-lg font-medium transition-all hover:opacity-90 shadow-md text-sm lg:text-base"
             >
               Home
             </Link>
@@ -53,7 +53,7 @@ const Navbar = () => {
               <Link
                 key={link.label}
                 to={link.to}
-                className="text-[#3f6d35] font-semibold hover:text-green-800 transition-colors text-sm lg:text-base whitespace-nowrap"
+                className="text-color-dark font-semibold hover:text-color-darker transition-colors text-sm lg:text-base whitespace-nowrap"
               >
                 {link.label}
               </Link>
@@ -63,7 +63,7 @@ const Navbar = () => {
           {/* Logout */}
           <button
             onClick={handleLogout}
-            className="flex flex-col items-center gap-0.5 text-[#3f6d35] hover:text-red-600 transition-colors group"
+            className="flex flex-col items-center gap-0.5 text-color-dark hover:text-red-600 transition-colors group"
             aria-label="Logout"
           >
             <LogOut size={20} className="group-hover:translate-x-0.5 transition-transform" />
@@ -71,7 +71,7 @@ const Navbar = () => {
           </button>
 
           {/* Tombol Pesan Sekarang — hidden di xs */}
-          <Button className="hidden sm:flex bg-[#3f6d35] hover:bg-[#2d4f26] text-white rounded-lg px-4 md:px-6 py-4 md:py-5 items-center gap-2 group shadow-lg shadow-green-900/20 text-sm md:text-base">
+          <Button className="hidden sm:flex bg-color-dark hover:bg-color-darker text-color-white rounded-lg px-4 md:px-6 py-4 md:py-5 items-center gap-2 group shadow-lg shadow-green-900/20 text-sm md:text-base">
             <span className="font-semibold whitespace-nowrap">Pesan Sekarang</span>
             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </Button>
@@ -79,7 +79,7 @@ const Navbar = () => {
           {/* Hamburger — mobile only */}
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="md:hidden text-[#3f6d35] p-1"
+            className="md:hidden text-color-dark p-1"
             aria-label="Toggle menu"
           >
             {menuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -98,8 +98,8 @@ const Navbar = () => {
               onClick={() => setMenuOpen(false)}
               className={
                 i === 0
-                  ? 'bg-[#3f6d35] text-white px-4 py-2.5 rounded-lg font-medium text-sm text-center shadow-md'
-                  : 'text-[#3f6d35] font-semibold text-sm py-2 border-b border-gray-100 last:border-0'
+                  ? 'bg-color-dark text-color-white px-4 py-2.5 rounded-lg font-medium text-sm text-center shadow-md'
+                  : 'text-color-dark font-semibold text-sm py-2 border-b border-gray-100 last:border-0'
               }
             >
               {link.label}
@@ -115,7 +115,7 @@ const Navbar = () => {
           </Button>
           <Button
             onClick={() => setMenuOpen(false)}
-            className="bg-[#3f6d35] hover:bg-[#2d4f26] text-white rounded-lg py-5 flex items-center justify-center gap-2 group shadow-lg shadow-green-900/20"
+            className="bg-color-dark hover:bg-color-darker text-color-white rounded-lg py-5 flex items-center justify-center gap-2 group shadow-lg shadow-green-900/20"
           >
             <span className="font-semibold">Pesan Sekarang</span>
             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
