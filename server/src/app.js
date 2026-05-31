@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 
 import errorHandler from './middleware/errorHandler.js';
 import authRoutes from './routes/auth.routes.js';
+import masterDataRoutes from './routes/masterData.routes.js';
 
 // __dirname equivalent untuk ES Module
 const __filename = fileURLToPath(import.meta.url);
@@ -20,7 +21,10 @@ const app = express();
 
 // CORS - izinkan request dari client
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: [
+    process.env.CLIENT_URL || 'http://localhost:5173',
+    'http://localhost:5174', // Alternatif port jika 5173 sudah digunakan
+  ],
   credentials: true,
 }));
 
@@ -61,6 +65,7 @@ app.get('/api/health', (req, res) => {
 // import galleryRoutes from './routes/gallery.js';
 
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/master-data', masterDataRoutes);
 // app.use('/api/categories', categoryRoutes);
 // app.use('/api/products', productRoutes);
 // app.use('/api/orders', orderRoutes);

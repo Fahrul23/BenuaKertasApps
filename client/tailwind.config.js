@@ -63,6 +63,7 @@ export default {
           white: "#FFFFFF", // Putih murni
           grad_start: "#4A750C", // Warna awal gradien
           grad_end: "#8BDB16", // Warna akhir gradien
+          secondary: "#B8D872", // Warna sekunder
         },
       },
       borderRadius: {

@@ -2,7 +2,7 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '@/store/slices/authSlice';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components';
 
 const AdminPage = () => {
   const dispatch = useDispatch();

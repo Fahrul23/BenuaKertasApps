@@ -6,9 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Eye, EyeOff, Printer, Mail, Lock, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Button, Input, Label } from '@/components';
 import { login, clearError } from '@/store/slices/authSlice'
 import loginIllustration from '@/assets/login-illustration.png'
 

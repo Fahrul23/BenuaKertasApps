@@ -1,7 +1,8 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
-import Button from '@/components/Button';
+import { Button } from '@/components';
 import { FEATURED_PRODUCTS_DATA } from '../constants';
+import boxImg from '@/assets/box.svg';
 
 const FeaturedProductsSection = () => {
     return (
@@ -19,8 +20,10 @@ const FeaturedProductsSection = () => {
                 {FEATURED_PRODUCTS_DATA.map((product, idx) => (
                     <div key={idx} className="flex flex-col relative group cursor-pointer hover:-translate-y-2 transition-all duration-300">
                         {/* Gray Background Image Placeholder */}
-                        <div className="w-full h-[185px] md:h-[240px] bg-[#F0F1F1] rounded-[5px] relative z-0"></div>
-                        
+                        <div className="w-full h-[185px] md:h-[240px] bg-[#F0F1F1] rounded-[5px] relative z-0 flex items-center justify-center">
+                            <img src={boxImg} alt="box" className="w-[60%] h-[70%] object-contain" />
+                        </div>
+
                         {/* White Card overlapping the gray area */}
                         <div className="bg-color-white border border-[#E3ECDA] rounded-[5px] p-3 md:p-5 flex flex-col shadow-sm mt-[-20px] relative z-10 group-hover:shadow-md transition-all group-hover:border-color-primary flex-1">
                             <h3 className="font-bold text-color-black text-sm md:text-base mb-1">
@@ -35,6 +38,13 @@ const FeaturedProductsSection = () => {
                         </div>
                     </div>
                 ))}
+            </div>
+
+            {/* View All Button */}
+            <div className="mt-10 md:mt-12 flex justify-center">
+                <Button className="px-6 md:px-8 py-2.5 md:py-3 text-sm md:text-base" iconRight={<ArrowRight size={18} />}>
+                    Lihat Semua Produk
+                </Button>
             </div>
         </section>
     );

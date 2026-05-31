@@ -1,8 +1,7 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
-import Button from '@/components/Button';
-import kotakKertasImg from '@/assets/kotak-kertas.png';
-import clipImg from '@/assets/clip.png';
+import { Button } from '@/components';
+import ilustrasiImg from '@/assets/ilustration.svg';
 import leafIconImg from '@/assets/leaf-icon.svg';
 
 const HeroSection = () => {
@@ -54,23 +53,13 @@ const HeroSection = () => {
                     </div>
                 </div>
 
-                {/* ── Right: Hero Images — nempel ke kanan browser ── */}
-                <div className="hidden md:block md:w-1/2 relative min-h-[420px] lg:min-h-[500px]">
-
-                    {/* clip.png — mentok ke kanan browser, layer bawah */}
+                {/* ── Right: Hero Image ── */}
+                <div className="hidden md:flex md:w-1/2 items-center justify-center">
                     <img
-                        src={clipImg}
-                        alt="Packaging clip"
-                        className="absolute right-0 top-1/2 -translate-y-1/2 w-[80%] object-contain z-10"
+                        src={ilustrasiImg}
+                        alt="Hero Illustration"
+                        className="w-full object-contain"
                     />
-
-                    {/* kotak-kertas.png — menimpa clip.png, float di atas */}
-                    <img
-                        src={kotakKertasImg}
-                        alt="Custom Box Packaging"
-                        className="absolute right-20 top-1/2 -translate-y-[55%] w-[70%] object-contain z-20 drop-shadow-xl -rotate-6"
-                    />
-
                 </div>
 
             </div>

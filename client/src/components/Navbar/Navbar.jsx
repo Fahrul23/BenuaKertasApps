@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { logout } from '@/store/slices/authSlice';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components';
 import { LogOut, ArrowRight, Menu, X } from 'lucide-react';
 import logo from '@/assets/logo-impepact.svg';
 
 const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = () => {
@@ -18,13 +19,17 @@ const Navbar = () => {
 
   const navLinks = [
     { label: 'Home', to: '/home' },
-    { label: 'Custom Packaging', to: '#' },
+    { label: 'Custom Packaging', to: '/custom-order' },
     { label: 'Katalog', to: '#' },
     { label: 'Tentang Kami', to: '#' },
   ];
 
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+
   return (
-    <nav className="w-full sticky top-0 z-50 bg-white shadow-[0px_2px_1px_0px_rgba(0,0,0,0.25)]">
+    <nav className="w-full sticky top-0 z-50 bg-white" style={{ boxShadow: '0 2px 1px 0 rgba(0, 0, 0, 0.25)' }}>
 
       {/* ── Main Bar ── */}
       <div className="w-full h-16 md:h-20 flex items-center px-4 md:px-8">
@@ -43,17 +48,15 @@ const Navbar = () => {
 
           {/* Nav Links — hidden di mobile */}
           <div className="hidden md:flex items-center gap-5 lg:gap-8">
-            <Link
-              to="/home"
-              className="bg-color-dark text-color-white px-5 py-2 rounded-lg font-medium transition-all hover:opacity-90 shadow-md text-sm lg:text-base"
-            >
-              Home
-            </Link>
-            {navLinks.slice(1).map((link) => (
+            {navLinks.map((link) => (
               <Link
                 key={link.label}
                 to={link.to}
-                className="text-color-dark font-semibold hover:text-color-darker transition-colors text-sm lg:text-base whitespace-nowrap"
+                className={`px-5 py-2 rounded-lg font-medium transition-all shadow-md text-sm lg:text-base whitespace-nowrap ${
+                  isActive(link.to)
+                    ? 'bg-color-dark text-color-white scale-105'
+                    : 'bg-transparent text-color-dark hover:bg-color-dark hover:text-color-white hover:scale-105'
+                }`}
               >
                 {link.label}
               </Link>
@@ -91,16 +94,16 @@ const Navbar = () => {
       {/* ── Mobile Dropdown ── */}
       {menuOpen && (
         <div className="md:hidden bg-white border-t border-gray-100 px-4 py-4 flex flex-col gap-3 shadow-md">
-          {navLinks.map((link, i) => (
+          {navLinks.map((link) => (
             <Link
               key={link.label}
               to={link.to}
               onClick={() => setMenuOpen(false)}
-              className={
-                i === 0
-                  ? 'bg-color-dark text-color-white px-4 py-2.5 rounded-lg font-medium text-sm text-center shadow-md'
-                  : 'text-color-dark font-semibold text-sm py-2 border-b border-gray-100 last:border-0'
-              }
+              className={`px-4 py-2.5 rounded-lg font-medium text-sm text-center shadow-md transition-all ${
+                isActive(link.to)
+                  ? 'bg-color-dark text-color-white scale-105'
+                  : 'bg-transparent text-color-dark border border-color-dark hover:bg-color-dark hover:text-color-white'
+              }`}
             >
               {link.label}
             </Link>

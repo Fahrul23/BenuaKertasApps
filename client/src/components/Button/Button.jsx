@@ -13,7 +13,7 @@ import { Button as ShadcnButton } from '@/components/ui/button';
  * @param {object}                props     - Prop HTML button lainnya (onClick, type, disabled, dll).
  *
  * @example
- * import Button from '@/components/Button';
+ * import { Button } from '@/components';
  * import { ArrowRight, Download } from 'lucide-react';
  *
  * // Primary dengan icon kanan

@@ -1,5 +1,5 @@
 import React from 'react';
-import Button from '@/components/Button';
+import { Button } from '@/components';
 import searchOrderIcon from '@/assets/search-order.svg';
 import protectedIcon from '@/assets/protected.svg';
 

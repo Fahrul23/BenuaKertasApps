@@ -4,10 +4,14 @@ import { QUALITY_PACKAGING_DATA } from '../constants';
 const QualityPackagingSection = () => {
     return (
         <section className="w-full px-6 md:px-10 lg:px-16 py-10 md:py-14">
-            {/* Heading */}
-            <h2 className="text-center font-semibold text-color-black text-lg md:text-2xl mb-8 md:mb-10">
-                Kemasan Berkualitas untuk Bisnis Anda
-            </h2>
+            <div className="text-center mb-10 md:mb-16">
+                <h2 className="font-bold text-color-black text-xl md:text-3xl mb-3">
+                    Kemasan Berkualitas untuk Bisnis Anda
+                </h2>
+                <p className="text-color-gray text-xs md:text-base">
+                    Kami menyediakan berbagai pilihan kemasan dengan standar kualitas terbaik untuk mendukung pertumbuhan bisnis Anda.
+                </p>
+            </div>
 
             {/* Cards Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
