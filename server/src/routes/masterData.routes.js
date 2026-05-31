@@ -19,10 +19,46 @@ const router = express.Router();
 router.get('/box-models', masterDataController.getBoxModels);
 
 /**
- * GET /api/master-data/box-models/:code
+ * GET /api/master-data/box-models/all
+ * Get all box models (including inactive) - for admin
+ */
+router.get('/box-models/all', masterDataController.getAllBoxModels);
+
+/**
+ * GET /api/master-data/box-models/:id
+ * Get box model by ID
+ */
+router.get('/box-models/:id', masterDataController.getBoxModelById);
+
+/**
+ * GET /api/master-data/box-models/code/:code
  * Get box model by code
  */
-router.get('/box-models/:code', masterDataController.getBoxModelByCode);
+router.get('/box-models/code/:code', masterDataController.getBoxModelByCode);
+
+/**
+ * POST /api/master-data/box-models
+ * Create new box model
+ */
+router.post('/box-models', masterDataController.createBoxModel);
+
+/**
+ * PUT /api/master-data/box-models/:id
+ * Update box model
+ */
+router.put('/box-models/:id', masterDataController.updateBoxModel);
+
+/**
+ * DELETE /api/master-data/box-models/:id
+ * Delete box model
+ */
+router.delete('/box-models/:id', masterDataController.deleteBoxModel);
+
+/**
+ * PATCH /api/master-data/box-models/:id/toggle
+ * Toggle box model active status
+ */
+router.patch('/box-models/:id/toggle', masterDataController.toggleBoxModelStatus);
 
 // ==========================================
 // MATERIALS

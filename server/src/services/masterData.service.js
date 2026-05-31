@@ -28,6 +28,24 @@ export const getActiveBoxModels = async () => {
 };
 
 /**
+ * Get all box models (including inactive) - for admin
+ */
+export const getAllBoxModels = async () => {
+  return await prisma.boxModel.findMany({
+    orderBy: { id: 'asc' },
+  });
+};
+
+/**
+ * Get box model by ID
+ */
+export const getBoxModelById = async (id) => {
+  return await prisma.boxModel.findUnique({
+    where: { id: parseInt(id) },
+  });
+};
+
+/**
  * Get box model by code
  */
 export const getBoxModelByCode = async (code) => {
@@ -40,6 +58,68 @@ export const getBoxModelByCode = async (code) => {
       description: true,
       imageUrl: true,
       basePrice: true,
+    },
+  });
+};
+
+/**
+ * Create new box model
+ */
+export const createBoxModel = async (data) => {
+  return await prisma.boxModel.create({
+    data: {
+      code: data.code,
+      name: data.name,
+      description: data.description || null,
+      imageUrl: data.imageUrl || null,
+      basePrice: data.basePrice ? parseFloat(data.basePrice) : null,
+      isActive: data.isActive !== undefined ? data.isActive : true,
+    },
+  });
+};
+
+/**
+ * Update box model
+ */
+export const updateBoxModel = async (id, data) => {
+  return await prisma.boxModel.update({
+    where: { id: parseInt(id) },
+    data: {
+      code: data.code,
+      name: data.name,
+      description: data.description || null,
+      imageUrl: data.imageUrl || null,
+      basePrice: data.basePrice ? parseFloat(data.basePrice) : null,
+      isActive: data.isActive !== undefined ? data.isActive : true,
+    },
+  });
+};
+
+/**
+ * Delete box model
+ */
+export const deleteBoxModel = async (id) => {
+  return await prisma.boxModel.delete({
+    where: { id: parseInt(id) },
+  });
+};
+
+/**
+ * Toggle box model active status
+ */
+export const toggleBoxModelStatus = async (id) => {
+  const boxModel = await prisma.boxModel.findUnique({
+    where: { id: parseInt(id) },
+  });
+
+  if (!boxModel) {
+    throw new Error('Box model not found');
+  }
+
+  return await prisma.boxModel.update({
+    where: { id: parseInt(id) },
+    data: {
+      isActive: !boxModel.isActive,
     },
   });
 };

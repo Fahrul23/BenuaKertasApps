@@ -33,7 +33,61 @@ export const getBoxModels = async (req, res) => {
 };
 
 /**
- * GET /api/master-data/box-models/:code
+ * GET /api/master-data/box-models/all
+ * Get all box models (including inactive) - for admin
+ */
+export const getAllBoxModels = async (req, res) => {
+  try {
+    const boxModels = await masterDataService.getAllBoxModels();
+    
+    res.status(200).json({
+      success: true,
+      message: 'All box models retrieved successfully',
+      data: boxModels,
+    });
+  } catch (error) {
+    console.error('Error getting all box models:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve box models',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * GET /api/master-data/box-models/:id
+ * Get box model by ID
+ */
+export const getBoxModelById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const boxModel = await masterDataService.getBoxModelById(id);
+    
+    if (!boxModel) {
+      return res.status(404).json({
+        success: false,
+        message: 'Box model not found',
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      message: 'Box model retrieved successfully',
+      data: boxModel,
+    });
+  } catch (error) {
+    console.error('Error getting box model:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve box model',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * GET /api/master-data/box-models/code/:code
  * Get box model by code
  */
 export const getBoxModelByCode = async (req, res) => {
@@ -58,6 +112,165 @@ export const getBoxModelByCode = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to retrieve box model',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * POST /api/master-data/box-models
+ * Create new box model
+ */
+export const createBoxModel = async (req, res) => {
+  try {
+    const data = req.body;
+    
+    // Validate required fields
+    if (!data.code || !data.name) {
+      return res.status(400).json({
+        success: false,
+        message: 'Code and name are required',
+      });
+    }
+    
+    const boxModel = await masterDataService.createBoxModel(data);
+    
+    res.status(201).json({
+      success: true,
+      message: 'Box model created successfully',
+      data: boxModel,
+    });
+  } catch (error) {
+    console.error('Error creating box model:', error);
+    
+    // Handle unique constraint error
+    if (error.code === 'P2002') {
+      return res.status(400).json({
+        success: false,
+        message: 'Box model with this code already exists',
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create box model',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * PUT /api/master-data/box-models/:id
+ * Update box model
+ */
+export const updateBoxModel = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = req.body;
+    
+    // Validate required fields
+    if (!data.code || !data.name) {
+      return res.status(400).json({
+        success: false,
+        message: 'Code and name are required',
+      });
+    }
+    
+    const boxModel = await masterDataService.updateBoxModel(id, data);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Box model updated successfully',
+      data: boxModel,
+    });
+  } catch (error) {
+    console.error('Error updating box model:', error);
+    
+    // Handle not found error
+    if (error.code === 'P2025') {
+      return res.status(404).json({
+        success: false,
+        message: 'Box model not found',
+      });
+    }
+    
+    // Handle unique constraint error
+    if (error.code === 'P2002') {
+      return res.status(400).json({
+        success: false,
+        message: 'Box model with this code already exists',
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update box model',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * DELETE /api/master-data/box-models/:id
+ * Delete box model
+ */
+export const deleteBoxModel = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    await masterDataService.deleteBoxModel(id);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Box model deleted successfully',
+    });
+  } catch (error) {
+    console.error('Error deleting box model:', error);
+    
+    // Handle not found error
+    if (error.code === 'P2025') {
+      return res.status(404).json({
+        success: false,
+        message: 'Box model not found',
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete box model',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * PATCH /api/master-data/box-models/:id/toggle
+ * Toggle box model active status
+ */
+export const toggleBoxModelStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const boxModel = await masterDataService.toggleBoxModelStatus(id);
+    
+    res.status(200).json({
+      success: true,
+      message: `Box model ${boxModel.isActive ? 'activated' : 'deactivated'} successfully`,
+      data: boxModel,
+    });
+  } catch (error) {
+    console.error('Error toggling box model status:', error);
+    
+    if (error.message === 'Box model not found') {
+      return res.status(404).json({
+        success: false,
+        message: 'Box model not found',
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: 'Failed to toggle box model status',
       error: error.message,
     });
   }
