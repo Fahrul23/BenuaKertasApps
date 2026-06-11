@@ -50,10 +50,6 @@ model Material {
   description  String?   @db.Text
   imageUrl     String?   @db.VarChar(500)
   isActive     Boolean   @default(true)
-  price300gsm  Decimal?  @db.Decimal(15, 2)
-  price350gsm  Decimal?  @db.Decimal(15, 2)
-  price400gsm  Decimal?  @db.Decimal(15, 2)
-  price450gsm  Decimal?  @db.Decimal(15, 2)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -69,32 +65,69 @@ model FinishingOption {
   description     String?   @db.Text
   imageUrl        String?   @db.VarChar(500)
   isActive        Boolean   @default(true)
-  additionalPrice Decimal?  @db.Decimal(15, 2)
+  category        String    @db.VarChar(10) // "side" | "type"
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
   @@index([code])
   @@index([isActive])
+  @@index([category])
   @@map("finishing_options")
 }
 
-model PricingRule {
-  id              Int       @id @default(autoincrement())
-  name            String    @db.VarChar(200)
-  minQuantity     Int
-  maxQuantity     Int?
-  minTotalArea    Decimal?  @db.Decimal(15, 2)
-  maxTotalArea    Decimal?  @db.Decimal(15, 2)
-  pricePerUnit    Decimal   @db.Decimal(15, 2)
-  discountPercent Decimal?  @db.Decimal(5, 2)
-  isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+// ==========================================
+// Pricing Engine Tables (NEW)
+// ==========================================
 
-  @@index([minQuantity])
+model PlanoType {
+  id              Int      @id @default(autoincrement())
+  code            String   @unique @db.VarChar(20)  // "65x100" | "79x109" | "90x120"
+  width           Float                              // 65 | 79 | 90  (cm)
+  height          Float                              // 100 | 109 | 120 (cm)
+  effectiveWidth  Float                              // width - 2  (setelah potong grip)
+  effectiveHeight Float                              // height - 2.5
+  isActive        Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
   @@index([isActive])
-  @@map("pricing_rules")
+  @@map("plano_types")
 }
+
+model MaterialPrice {
+  id           Int      @id @default(autoincrement())
+  planoCode    String   @db.VarChar(20)   // "65x100" | "79x109" | "90x120"
+  materialCode String   @db.VarChar(100)  // "duplex" | "ivory"
+  thickness    Int                         // GSM: 230|250|270|300|310|350|400
+  price        Float                       // Harga per plano (Rupiah)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([planoCode, materialCode, thickness])
+  @@index([planoCode])
+  @@index([isActive])
+  @@map("material_prices")
+}
+
+model ColorPrice {
+  id           Int      @id @default(autoincrement())
+  thicknessMin Int                // GSM minimal range
+  thicknessMax Int                // GSM maksimal range
+  pricePerSide Float              // Harga per sisi
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([thicknessMin])
+  @@index([isActive])
+  @@map("color_prices")
+}
+
+// ==========================================
+// Order Table (UPDATED with pricing engine fields)
+// ==========================================
 
 model Order {
   id                      Int                  @id @default(autoincrement())
@@ -108,7 +141,8 @@ model Order {
   material                String               @db.VarChar(50)
   materialThickness       Int
   colorOption             String               @db.VarChar(50)
-  finishingOption         String               @db.VarChar(50)
+  laminationSide          String               @db.VarChar(50)
+  laminationType          String?              @db.VarChar(50)
   designFileUrl           String?              @db.VarChar(500)
   designFilePublicId      String?              @db.VarChar(255)
   designFileName          String?              @db.VarChar(255)
@@ -116,9 +150,25 @@ model Order {
   designFileFormat        String?              @db.VarChar(10)
   customerNote            String?              @db.Text
   quantity                Int
+
+  // === Pricing Engine Fields (NEW) ===
+  planoType               String?              @db.VarChar(20)   // "65x100" | "79x109" | "90x120"
+  paperWidth              Float?                                  // Lebar kertas hasil formula (cm)
+  paperHeight             Float?                                  // Panjang kertas hasil formula (cm)
+  jumlahMata              Int?                                    // Hasil kalkulasi mata terbanyak
+  planoOrientation        String?              @db.VarChar(20)   // "normal" | "rotasi"
+  hargaMaterial           Float?                                  // Dari MaterialPrice lookup
+  hargaWarna              Float?                                  // Dari ColorPrice × colorSides
+  hargaLaminasi           Float?                                  // plano.width × plano.height × 0.3
+  subtotalPerUnit         Float?                                  // hargaMaterial + hargaWarna + hargaLaminasi
+  markup                  Int                  @default(85)       // Koefisien markup tetap
+  totalPrice              Float?                                  // subtotalPerUnit × quantity × markup
+
+  // === Legacy fields kept for backward compat ===
   subtotal                Decimal              @db.Decimal(15, 2)
   tax                     Decimal              @default(0.00) @db.Decimal(15, 2)
   totalAmount             Decimal              @db.Decimal(15, 2)
+
   orderStatus             orders_orderStatus   @default(PENDING)
   paymentStatus           orders_paymentStatus @default(UNPAID)
   estimatedProductionDays Int                  @default(10)

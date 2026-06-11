@@ -1,32 +1,6 @@
 import React from 'react';
-import premiumIcon from '@/assets/kertas-premium.svg';
-import hargaIcon from '@/assets/harga.svg';
-import flexIcon from '@/assets/flexible.svg';
-import layananIcon from '@/assets/layanan.svg';
 import mesinImg from '@/assets/mesin.svg';
-
-const FEATURES = [
-    {
-        icon: premiumIcon,
-        title: 'Bahan Berkualitas Premium',
-        desc: 'Menggunakan bahan terbaik dengan standar food grade.'
-    },
-    {
-        icon: hargaIcon,
-        title: 'Harga Kompetitif',
-        desc: 'Harga terbaik dengan kualitas yang tidak diragukan.'
-    },
-    {
-        icon: flexIcon,
-        title: 'Minimal Order Fleksibel',
-        desc: 'Minimal order mulai dari 1000 pcs'
-    },
-    {
-        icon: layananIcon,
-        title: 'Layanan Profesional',
-        desc: 'Tim kami siap membantu dari awal hingga pesanan tiba.'
-    }
-];
+import { FEATURES } from '../constants';
 
 const WhyChooseUsSection = () => {
     return (

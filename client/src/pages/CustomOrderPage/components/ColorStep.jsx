@@ -1,12 +1,6 @@
 import { Check } from 'lucide-react';
 import { cn } from '@/utils';
-import satuSisiImg from '@/assets/1-sisi.svg';
-import duaSisiImg from '@/assets/2-sisi.svg';
-
-const COLOR_OPTIONS = [
-  { id: '1-sisi', name: '1 Sisi', description: 'Cetak warna pada 1 sisi kemasan', image: satuSisiImg },
-  { id: '2-sisi', name: '2 Sisi', description: 'Cetak warna pada 2 sisi kemasan', image: duaSisiImg },
-];
+import { COLOR_OPTIONS } from '../constants';
 
 const ColorStep = ({ selectedColor, onColorSelect }) => {
   return (

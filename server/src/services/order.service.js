@@ -17,7 +17,7 @@ export const createOrder = async (userId, orderData) => {
   }
 
   // Calculate pricing
-  const pricing = calculateOrderPrice(orderData);
+  const pricing = await calculateOrderPrice(orderData);
 
   // Generate order number
   const orderNumber = await generateOrderNumber();
@@ -34,8 +34,9 @@ export const createOrder = async (userId, orderData) => {
       sizeTinggiTutup: orderData.sizeTinggiTutup || null,
       material: orderData.material,
       materialThickness: orderData.materialThickness,
-      colorOption: orderData.colorOption,
-      finishingOption: orderData.finishingOption,
+      colorOption: orderData.colorOption || orderData.colorSides,
+      laminationSide: orderData.laminationSide,
+      laminationType: orderData.laminationSide === 'tanpa-laminasi' ? null : (orderData.laminationType || null),
       designFileUrl: orderData.designFileUrl || null,
       designFilePublicId: orderData.designFilePublicId || null,
       designFileName: orderData.designFileName || null,
@@ -43,9 +44,25 @@ export const createOrder = async (userId, orderData) => {
       designFileFormat: orderData.designFileFormat || null,
       customerNote: orderData.customerNote || null,
       quantity: orderData.quantity,
-      subtotal: pricing.subtotal,
-      tax: pricing.tax,
-      totalAmount: pricing.totalAmount,
+
+      // Pricing Engine v2 fields
+      planoType: pricing.planoType || null,
+      paperWidth: pricing.paperWidth || null,
+      paperHeight: pricing.paperHeight || null,
+      jumlahMata: pricing.jumlahMata || null,
+      planoOrientation: pricing.planoOrientation || null,
+      hargaMaterial: pricing.hargaMaterial || null,
+      hargaWarna: pricing.hargaWarna || null,
+      hargaLaminasi: pricing.hargaLaminasi || null,
+      subtotalPerUnit: pricing.subtotalPerUnit || null,
+      markup: pricing.markup || 85,
+      totalPrice: pricing.totalPrice || null,
+
+      // Legacy fields
+      subtotal: pricing.subtotal || pricing.totalPrice || 0,
+      tax: pricing.tax || 0,
+      totalAmount: pricing.totalAmount || pricing.totalPrice || 0,
+
       orderStatus: 'WAITING_PAYMENT',
       paymentStatus: 'UNPAID',
     },

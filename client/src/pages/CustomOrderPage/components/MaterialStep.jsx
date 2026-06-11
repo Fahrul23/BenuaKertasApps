@@ -1,24 +1,14 @@
 import { Check } from 'lucide-react';
 import { RadioButton } from '@/components';
 import { cn } from '@/utils';
-import duplexImg from '@/assets/duplex.svg';
-import ivoryImg from '@/assets/ivory.svg';
-import kraftImg from '@/assets/kraft.svg';
-
-const MATERIALS = [
-  { id: 'duplex', name: 'Duplex', image: duplexImg },
-  { id: 'ivory', name: 'Ivory', image: ivoryImg },
-  { id: 'kraft', name: 'Kraft', image: kraftImg },
-];
-
-const THICKNESS_OPTIONS = [
-  { label: '300 gsm', value: '300' },
-  { label: '350 gsm', value: '350' },
-  { label: '400 gsm', value: '400' },
-  { label: '450 gsm', value: '450' },
-];
+import { MATERIALS, THICKNESS_OPTIONS_BY_MATERIAL, THICKNESS_OPTIONS } from '../constants';
 
 const MaterialStep = ({ selectedMaterial, selectedThickness, onMaterialSelect, onThicknessSelect }) => {
+  // Get thickness options based on selected material
+  const thicknessOptions = selectedMaterial
+    ? (THICKNESS_OPTIONS_BY_MATERIAL[selectedMaterial] || THICKNESS_OPTIONS)
+    : THICKNESS_OPTIONS;
+
   return (
     <div>
       <div className="mb-6">
@@ -27,7 +17,7 @@ const MaterialStep = ({ selectedMaterial, selectedThickness, onMaterialSelect, o
       </div>
 
       {/* Material Selection */}
-      <div className="grid grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-2 gap-6 mb-8">
         {MATERIALS.map((material) => (
           <div
             key={material.id}
@@ -72,22 +62,24 @@ const MaterialStep = ({ selectedMaterial, selectedThickness, onMaterialSelect, o
         ))}
       </div>
 
-      {/* Thickness Selection */}
-      <div>
-        <h3 className="font-bold text-black mb-4">Ketebalan Bahan</h3>
-        <div className="flex flex-wrap gap-4">
-          {THICKNESS_OPTIONS.map((option) => (
-            <RadioButton
-              key={option.value}
-              label={option.label}
-              value={option.value}
-              name="thickness"
-              checked={selectedThickness === option.value}
-              onChange={(e) => onThicknessSelect(e.target.value)}
-            />
-          ))}
+      {/* Thickness Selection — filtered by material */}
+      {selectedMaterial && (
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <h3 className="font-bold text-black mb-4">Ketebalan Bahan</h3>
+          <div className="flex flex-wrap gap-4">
+            {thicknessOptions.map((option) => (
+              <RadioButton
+                key={option.value}
+                label={option.label}
+                value={option.value}
+                name="thickness"
+                checked={selectedThickness === option.value}
+                onChange={(e) => onThicknessSelect(e.target.value)}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

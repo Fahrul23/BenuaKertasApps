@@ -7,6 +7,16 @@ import rulerIcon from '@/assets/ruler.svg';
 import uploadIcon from '@/assets/upload.svg';
 import debitCardIcon from '@/assets/debit-card.svg';
 import settingIcon from '@/assets/setting.svg';
+import premiumIcon from '@/assets/kertas-premium.svg';
+import hargaIcon from '@/assets/harga.svg';
+import flexIcon from '@/assets/flexible.svg';
+import layananIcon from '@/assets/layanan.svg';
+import kopiKenanganLogo from '@/assets/kopi-kenangan.svg';
+import richeeseFactoryLogo from '@/assets/richeese-factory.svg';
+import jcoLogo from '@/assets/j-co.svg';
+import hokbenLogo from '@/assets/hokben.svg';
+import bakmiGmLogo from '@/assets/bakmi-gm.svg';
+import chatimeLogo from '@/assets/chatime.svg';
 
 export const QUALITY_PACKAGING_DATA = [
     {
@@ -70,3 +80,36 @@ export const FEATURED_PRODUCTS_DATA = [
     { title: 'Lunch Box', desc: 'Praktis dan elegan untuk berbagai jenis makanan.' },
     { title: 'Lunch Box', desc: 'Praktis dan elegan untuk berbagai jenis makanan.' },
 ];
+
+export const FEATURES = [
+    {
+        icon: premiumIcon,
+        title: 'Bahan Berkualitas Premium',
+        desc: 'Menggunakan bahan terbaik dengan standar food grade.'
+    },
+    {
+        icon: hargaIcon,
+        title: 'Harga Kompetitif',
+        desc: 'Harga terbaik dengan kualitas yang tidak diragukan.'
+    },
+    {
+        icon: flexIcon,
+        title: 'Minimal Order Fleksibel',
+        desc: 'Minimal order mulai dari 1000 pcs'
+    },
+    {
+        icon: layananIcon,
+        title: 'Layanan Profesional',
+        desc: 'Tim kami siap membantu dari awal hingga pesanan tiba.'
+    }
+];
+
+export const LOGOS = [
+    { name: 'Kopi Kenangan', url: kopiKenanganLogo },
+    { name: 'Richeese Factory', url: richeeseFactoryLogo },
+    { name: 'J.CO', url: jcoLogo },
+    { name: 'HokBen', url: hokbenLogo },
+    { name: 'Bakmi GM', url: bakmiGmLogo },
+    { name: 'Chatime', url: chatimeLogo }
+];
+

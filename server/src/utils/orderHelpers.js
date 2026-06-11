@@ -1,4 +1,5 @@
 import prisma from '../config/prisma.js';
+import { calculateFullPrice } from '../services/pricingEngine.service.js';
 
 /**
  * Generate unique order number
@@ -59,110 +60,12 @@ export const generatePaymentNumber = async () => {
 };
 
 /**
- * Calculate box area in square centimeters
- * For pricing calculation
+ * Calculate order price menggunakan Pricing Engine v2
+ * Formula: (hargaMaterial + hargaWarna + hargaLaminasi) × quantity × 85
+ * Async function — memanggil database untuk lookup harga
  */
-export const calculateBoxArea = (panjang, lebar, tinggi, tinggiTutup = null) => {
-  // Basic formula for box surface area
-  // For standard box: 2(pl + pt + lt)
-  // For top-bottom box: add extra for lid
-  
-  const p = parseFloat(panjang);
-  const l = parseFloat(lebar);
-  const t = parseFloat(tinggi);
-  
-  let area = 2 * (p * l + p * t + l * t);
-  
-  // Add lid area for top-bottom box
-  if (tinggiTutup) {
-    const tt = parseFloat(tinggiTutup);
-    area += 2 * (p * l + p * tt + l * tt);
-  }
-  
-  return area;
-};
-
-/**
- * Calculate order price
- * This is a simplified version - adjust based on actual pricing rules
- */
-export const calculateOrderPrice = (orderData) => {
-  const {
-    sizePanjang,
-    sizeLebar,
-    sizeTinggi,
-    sizeTinggiTutup,
-    material,
-    materialThickness,
-    colorOption,
-    finishingOption,
-    quantity,
-  } = orderData;
-
-  // Base price per square cm
-  const basePricePerSqCm = 0.5; // Rp 0.5 per cm²
-
-  // Calculate area
-  const area = calculateBoxArea(sizePanjang, sizeLebar, sizeTinggi, sizeTinggiTutup);
-
-  // Material multiplier
-  const materialMultipliers = {
-    duplex: 1.0,
-    ivory: 1.2,
-    kraft: 0.9,
-  };
-
-  // Thickness multiplier
-  const thicknessMultipliers = {
-    300: 1.0,
-    350: 1.1,
-    400: 1.2,
-    450: 1.3,
-  };
-
-  // Color multiplier
-  const colorMultipliers = {
-    '1-sisi': 1.0,
-    '2-sisi': 1.3,
-  };
-
-  // Finishing multiplier
-  const finishingMultipliers = {
-    'tanpa-laminasi': 1.0,
-    'sisi-luar': 1.2,
-    'dalam': 1.2,
-    'luar-dalam': 1.4,
-    'glossy': 1.3,
-    'doff': 1.3,
-  };
-
-  // Quantity discount
-  const quantityMultiplier = quantity >= 5000 ? 0.9 : quantity >= 3000 ? 0.95 : 1.0;
-
-  // Calculate subtotal
-  const pricePerUnit =
-    area *
-    basePricePerSqCm *
-    (materialMultipliers[material] || 1.0) *
-    (thicknessMultipliers[materialThickness] || 1.0) *
-    (colorMultipliers[colorOption] || 1.0) *
-    (finishingMultipliers[finishingOption] || 1.0);
-
-  const subtotal = pricePerUnit * quantity * quantityMultiplier;
-
-  // Calculate tax (PPN 11%)
-  const tax = subtotal * 0.11;
-
-  // Calculate total
-  const totalAmount = subtotal + tax;
-
-  return {
-    subtotal: Math.round(subtotal),
-    tax: Math.round(tax),
-    totalAmount: Math.round(totalAmount),
-    pricePerUnit: Math.round(pricePerUnit),
-    area: Math.round(area),
-  };
+export const calculateOrderPrice = async (orderData) => {
+  return await calculateFullPrice(orderData);
 };
 
 /**
@@ -237,8 +140,6 @@ export const validateOrderData = (data) => {
     'sizeTinggi',
     'material',
     'materialThickness',
-    'colorOption',
-    'finishingOption',
     'quantity',
   ];
 
@@ -246,6 +147,26 @@ export const validateOrderData = (data) => {
     if (!data[field]) {
       errors.push(`${field} is required`);
     }
+  }
+
+  // colorSides atau colorOption wajib ada
+  if (!data.colorSides && !data.colorOption) {
+    errors.push('colorSides is required');
+  }
+
+  // laminationSide atau laminationPart wajib ada
+  const laminationPart = data.laminationPart || data.laminationSide;
+  if (!laminationPart) {
+    errors.push('laminationSide (or laminationPart) is required');
+  }
+
+  // Validate laminationType (wajib kecuali jika tanpa-laminasi)
+  if (laminationPart && laminationPart !== 'tanpa-laminasi' && !data.laminationType) {
+    errors.push('laminationType is required when laminationSide is not tanpa-laminasi');
+  }
+  // laminationType harus null jika tanpa-laminasi
+  if (laminationPart === 'tanpa-laminasi' && data.laminationType) {
+    errors.push('laminationType must be null when laminationSide is tanpa-laminasi');
   }
 
   // Validate sizes
@@ -265,8 +186,8 @@ export const validateOrderData = (data) => {
   }
 
   // Validate quantity
-  if (data.quantity && data.quantity < 1000) {
-    errors.push('Minimum quantity is 1000');
+  if (data.quantity && data.quantity < 1) {
+    errors.push('Minimum quantity is 1');
   }
 
   return {

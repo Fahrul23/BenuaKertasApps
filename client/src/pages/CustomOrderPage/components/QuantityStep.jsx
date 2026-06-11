@@ -1,18 +1,18 @@
-import { SelectInput } from '@/components';
-
-const QUANTITY_OPTIONS = [
-  { value: '1000', label: '1000' },
-  { value: '1500', label: '1500' },
-  { value: '2000', label: '2000' },
-  { value: '2500', label: '2500' },
-  { value: '3000', label: '3000' },
-  { value: '3500', label: '3500' },
-  { value: '4000', label: '4000' },
-  { value: '4500', label: '4500' },
-  { value: '5000', label: '5000' },
-];
+import { useState } from 'react';
+import { NumberInput, SelectInput } from '@/components';
+import { QUANTITY_OPTIONS, formatRupiah } from '../constants';
 
 const QuantityStep = ({ quantity, onQuantityChange }) => {
+  const [inputMode, setInputMode] = useState('dropdown'); // 'dropdown' | 'custom'
+
+  const handleDropdownChange = (e) => {
+    onQuantityChange(e.target.value);
+  };
+
+  const handleCustomChange = (e) => {
+    onQuantityChange(e.target.value);
+  };
+
   return (
     <div>
       <div className="mb-6">
@@ -20,17 +20,61 @@ const QuantityStep = ({ quantity, onQuantityChange }) => {
         <p className="text-color-secondary text-sm font-semibold">Minimal cetak 1000 pcs</p>
       </div>
 
-      {/* Quantity Select */}
-      <div className="max-w-md">
-        <SelectInput
-          label="Jumlah"
-          unit="pcs"
-          value={quantity}
-          onChange={onQuantityChange}
-          options={QUANTITY_OPTIONS}
-          placeholder="0"
-        />
+      {/* Mode Toggle */}
+      <div className="flex gap-3 mb-6">
+        <button
+          onClick={() => { setInputMode('dropdown'); onQuantityChange(''); }}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+            inputMode === 'dropdown'
+              ? 'bg-color-secondary text-white shadow-md'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}
+        >
+          Pilih Jumlah
+        </button>
+        <button
+          onClick={() => { setInputMode('custom'); onQuantityChange(''); }}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+            inputMode === 'custom'
+              ? 'bg-color-secondary text-white shadow-md'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}
+        >
+          Input Manual
+        </button>
       </div>
+
+      {/* Quantity Input */}
+      <div className="max-w-md">
+        {inputMode === 'dropdown' ? (
+          <SelectInput
+            label="Jumlah"
+            unit="pcs"
+            value={quantity}
+            onChange={handleDropdownChange}
+            options={QUANTITY_OPTIONS}
+            placeholder="Pilih jumlah"
+          />
+        ) : (
+          <NumberInput
+            label="Jumlah Custom"
+            unit="pcs"
+            value={quantity}
+            onChange={handleCustomChange}
+            min="1"
+            placeholder="Masukkan jumlah"
+          />
+        )}
+      </div>
+
+      {/* Info */}
+      {quantity && parseInt(quantity) >= 1 && (
+        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg animate-in fade-in duration-200">
+          <p className="text-sm text-blue-700">
+            <span className="font-semibold">{Number(quantity).toLocaleString('id-ID')} pcs</span> akan dicetak
+          </p>
+        </div>
+      )}
     </div>
   );
 };

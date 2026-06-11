@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Power, Search } from 'lucide-react';
-import { Navbar, Footer } from '@/components';
+import { Plus, Edit2, Trash2, Power, Search, Eye } from 'lucide-react';
 import { masterDataAPI } from '@/services/api';
+import { SuccessModal, ErrorModal } from '@/components';
 import BoxModelModal from './components/BoxModelModal';
 import DeleteConfirmModal from './components/DeleteConfirmModal';
+import BoxModelDetailModal from './components/DetailModal';
 
 const BoxModelManagementPage = () => {
   const [boxModels, setBoxModels] = useState([]);
@@ -11,8 +12,11 @@ const BoxModelManagementPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedBoxModel, setSelectedBoxModel] = useState(null);
   const [modalMode, setModalMode] = useState('create'); // 'create' or 'edit'
+  const [successModal, setSuccessModal] = useState({ isOpen: false, title: '', message: '' });
+  const [errorModal, setErrorModal] = useState({ isOpen: false, title: '', message: '' });
 
   // Fetch all box models
   const fetchBoxModels = async () => {
@@ -24,7 +28,11 @@ const BoxModelManagementPage = () => {
       }
     } catch (error) {
       console.error('Error fetching box models:', error);
-      alert('Failed to fetch box models');
+      setErrorModal({
+        isOpen: true,
+        title: 'Gagal Memuat',
+        message: 'Gagal memuat data box models.'
+      });
     } finally {
       setLoading(false);
     }
@@ -33,6 +41,12 @@ const BoxModelManagementPage = () => {
   useEffect(() => {
     fetchBoxModels();
   }, []);
+
+  // Handle detail
+  const handleDetail = (boxModel) => {
+    setSelectedBoxModel(boxModel);
+    setIsDetailOpen(true);
+  };
 
   // Handle create
   const handleCreate = () => {
@@ -59,15 +73,27 @@ const BoxModelManagementPage = () => {
     try {
       const response = await masterDataAPI.deleteBoxModel(selectedBoxModel.id);
       if (response.success) {
-        alert('Box model deleted successfully');
+        setSuccessModal({
+          isOpen: true,
+          title: 'Berhasil Dihapus',
+          message: 'Box model telah berhasil dihapus dari sistem.'
+        });
         fetchBoxModels();
         setIsDeleteModalOpen(false);
       } else {
-        alert(response.message || 'Failed to delete box model');
+        setErrorModal({
+          isOpen: true,
+          title: 'Gagal Menghapus',
+          message: response.message || 'Gagal menghapus box model.'
+        });
       }
     } catch (error) {
       console.error('Error deleting box model:', error);
-      alert('Failed to delete box model');
+      setErrorModal({
+        isOpen: true,
+        title: 'Gagal Menghapus',
+        message: 'Terjadi kesalahan sistem saat menghapus box model.'
+      });
     }
   };
 
@@ -76,14 +102,26 @@ const BoxModelManagementPage = () => {
     try {
       const response = await masterDataAPI.toggleBoxModelStatus(boxModel.id);
       if (response.success) {
-        alert(response.message);
+        setSuccessModal({
+          isOpen: true,
+          title: 'Status Diperbarui',
+          message: `Status box model berhasil diubah menjadi ${!boxModel.isActive ? 'aktif' : 'nonaktif'}.`
+        });
         fetchBoxModels();
       } else {
-        alert(response.message || 'Failed to toggle status');
+        setErrorModal({
+          isOpen: true,
+          title: 'Gagal Memperbarui Status',
+          message: response.message || 'Gagal memperbarui status box model.'
+        });
       }
     } catch (error) {
       console.error('Error toggling status:', error);
-      alert('Failed to toggle status');
+      setErrorModal({
+        isOpen: true,
+        title: 'Gagal Memperbarui Status',
+        message: 'Terjadi kesalahan sistem saat memperbarui status box model.'
+      });
     }
   };
 
@@ -98,15 +136,27 @@ const BoxModelManagementPage = () => {
       }
 
       if (response.success) {
-        alert(response.message);
+        setSuccessModal({
+          isOpen: true,
+          title: modalMode === 'create' ? 'Berhasil Ditambahkan' : 'Berhasil Diperbarui',
+          message: response.message || 'Box model berhasil disimpan.'
+        });
         fetchBoxModels();
         setIsModalOpen(false);
       } else {
-        alert(response.message || 'Failed to save box model');
+        setErrorModal({
+          isOpen: true,
+          title: 'Gagal Menyimpan',
+          message: response.message || 'Gagal menyimpan box model.'
+        });
       }
     } catch (error) {
       console.error('Error saving box model:', error);
-      alert('Failed to save box model');
+      setErrorModal({
+        isOpen: true,
+        title: 'Gagal Menyimpan',
+        message: 'Terjadi kesalahan sistem saat menyimpan box model.'
+      });
     }
   };
 
@@ -117,15 +167,13 @@ const BoxModelManagementPage = () => {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar />
-
-      <main className="flex-1 px-6 md:px-10 lg:px-16 py-8 md:py-12">
-        <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto">
+      <main>
+        <div>
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Box Model Management</h1>
-            <p className="text-gray-600">Manage box models for custom orders</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Box Model Management</h1>
+            <p className="text-gray-500 text-sm md:text-base">Kelola model kotak yang tersedia untuk pemesanan custom</p>
           </div>
 
           {/* Actions Bar */}
@@ -238,36 +286,45 @@ const BoxModelManagementPage = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
+                            {/* Detail Button */}
+                            <button
+                              onClick={() => handleDetail(model)}
+                              className="p-1.5 rounded-lg text-purple-600 hover:text-purple-900 hover:bg-purple-50 transition-colors"
+                              title="Lihat Detail"
+                            >
+                              <Eye size={16} />
+                            </button>
+
                             {/* Edit Button */}
                             <button
                               onClick={() => handleEdit(model)}
-                              className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
+                              className="p-1.5 rounded-lg text-blue-600 hover:text-blue-900 hover:bg-blue-50 transition-colors"
                               title="Edit"
                             >
-                              <Edit2 size={18} />
+                              <Edit2 size={16} />
                             </button>
 
                             {/* Toggle Status Button */}
                             <button
                               onClick={() => handleToggleStatus(model)}
-                              className={`p-1 rounded ${
+                              className={`p-1.5 rounded-lg transition-colors ${
                                 model.isActive
                                   ? 'text-orange-600 hover:text-orange-900 hover:bg-orange-50'
                                   : 'text-green-600 hover:text-green-900 hover:bg-green-50'
                               }`}
-                              title={model.isActive ? 'Deactivate' : 'Activate'}
+                              title={model.isActive ? 'Nonaktifkan' : 'Aktifkan'}
                             >
-                              <Power size={18} />
+                              <Power size={16} />
                             </button>
 
                             {/* Delete Button */}
                             <button
                               onClick={() => handleDelete(model)}
-                              className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
-                              title="Delete"
+                              className="p-1.5 rounded-lg text-red-600 hover:text-red-900 hover:bg-red-50 transition-colors"
+                              title="Hapus"
                             >
-                              <Trash2 size={18} />
+                              <Trash2 size={16} />
                             </button>
                           </div>
                         </td>
@@ -286,8 +343,6 @@ const BoxModelManagementPage = () => {
         </div>
       </main>
 
-      <Footer />
-
       {/* Modals */}
       {isModalOpen && (
         <BoxModelModal
@@ -305,6 +360,27 @@ const BoxModelManagementPage = () => {
           onConfirm={confirmDelete}
         />
       )}
+
+      {isDetailOpen && (
+        <BoxModelDetailModal
+          boxModel={selectedBoxModel}
+          onClose={() => setIsDetailOpen(false)}
+        />
+      )}
+
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        title={successModal.title}
+        message={successModal.message}
+        onClose={() => setSuccessModal({ ...successModal, isOpen: false })}
+      />
+
+      <ErrorModal
+        isOpen={errorModal.isOpen}
+        title={errorModal.title}
+        message={errorModal.message}
+        onClose={() => setErrorModal({ ...errorModal, isOpen: false })}
+      />
     </div>
   );
 };

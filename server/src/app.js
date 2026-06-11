@@ -9,6 +9,7 @@ import errorHandler from './middleware/errorHandler.js';
 import authRoutes from './routes/auth.routes.js';
 import masterDataRoutes from './routes/masterData.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
+import calculatorRoutes from './routes/calculator.routes.js';
 
 // __dirname equivalent untuk ES Module
 const __filename = fileURLToPath(import.meta.url);
@@ -68,6 +69,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/master-data', masterDataRoutes);
 app.use('/api/v1/upload', uploadRoutes);
+app.use('/api/v1/calculator', calculatorRoutes);
 // app.use('/api/categories', categoryRoutes);
 // app.use('/api/products', productRoutes);
 // app.use('/api/orders', orderRoutes);

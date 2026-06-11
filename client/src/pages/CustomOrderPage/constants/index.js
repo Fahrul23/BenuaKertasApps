@@ -1,4 +1,14 @@
 import boxImg from '@/assets/box.svg';
+import duplexImg from '@/assets/duplex.svg';
+import ivoryImg from '@/assets/ivory.svg';
+import sisiLuarImg from '@/assets/sisi-luar.svg';
+import dalamImg from '@/assets/dalam.svg';
+import luarDalamImg from '@/assets/luar-dalam.svg';
+import tanpaLaminasiImg from '@/assets/tanpa-laminasi.svg';
+import glossyImg from '@/assets/glossy.svg';
+import doffImg from '@/assets/doff.svg';
+import satuSisiImg from '@/assets/1-sisi.svg';
+import duaSisiImg from '@/assets/2-sisi.svg';
 
 // Data untuk setiap tipe box
 export const BOX_TYPES = {
@@ -8,7 +18,6 @@ export const BOX_TYPES = {
     models: [
       { id: 'earlock-box', name: 'Earlock Box', image: boxImg },
       { id: 'top-bottom-box', name: 'Top & Bottom Box', image: boxImg },
-      { id: 'clamshell-box', name: 'Clamshell Box', image: boxImg },
       { id: 'tray-box', name: 'Tray Box', image: boxImg },
     ]
   },
@@ -18,14 +27,6 @@ export const BOX_TYPES = {
     models: [
       { id: 'model-standard', name: 'Model Standard', image: boxImg },
       { id: 'model-premium', name: 'Model Premium', image: boxImg },
-    ]
-  },
-  'clamshell-box': {
-    title: 'CLAMSHELL BOX',
-    description: 'Atur spesifikasi custom Clamshell Box sesuai kebutuhan, perhatikan setiap langkah di setiap bagiannya terisi sesuai dengan instruksi',
-    models: [
-      { id: 'engsel-samping', name: 'Engsel Samping', image: boxImg },
-      { id: 'engsel-belakang', name: 'Engsel Belakang', image: boxImg },
     ]
   },
   'tray-box': {
@@ -96,4 +97,79 @@ export const getVisibleSteps = (currentStep) => {
     { id: 'ellipsis', label: '', isEllipsis: true },
     ...ALL_STEPS.slice(currentStep - 2, currentStep + 1), // Steps around current
   ];
+};
+
+// Quantity options (dropdown)
+export const QUANTITY_OPTIONS = [
+  { value: '1000', label: '1000' },
+  { value: '1500', label: '1500' },
+  { value: '2000', label: '2000' },
+  { value: '2500', label: '2500' },
+  { value: '3000', label: '3000' },
+  { value: '3500', label: '3500' },
+  { value: '4000', label: '4000' },
+  { value: '4500', label: '4500' },
+  { value: '5000', label: '5000' },
+];
+
+// Materials — Kraft dihapus, hanya Duplex dan Ivory
+export const MATERIALS = [
+  { id: 'duplex', name: 'Duplex', image: duplexImg },
+  { id: 'ivory', name: 'Ivory', image: ivoryImg },
+];
+
+// Thickness options per material
+export const THICKNESS_OPTIONS_BY_MATERIAL = {
+  duplex: [
+    { label: '310 gsm', value: '310' },
+    { label: '350 gsm', value: '350' },
+    { label: '400 gsm', value: '400' },
+  ],
+  ivory: [
+    { label: '230 gsm', value: '230' },
+    { label: '250 gsm', value: '250' },
+    { label: '270 gsm', value: '270' },
+    { label: '300 gsm', value: '300' },
+  ],
+};
+
+// Default thickness options (fallback)
+export const THICKNESS_OPTIONS = [
+  { label: '230 gsm', value: '230' },
+  { label: '250 gsm', value: '250' },
+  { label: '270 gsm', value: '270' },
+  { label: '300 gsm', value: '300' },
+  { label: '310 gsm', value: '310' },
+  { label: '350 gsm', value: '350' },
+  { label: '400 gsm', value: '400' },
+];
+
+export const LAMINATION_SIDE_OPTIONS = [
+  { id: 'sisi-luar', name: 'Sisi Luar', image: sisiLuarImg },
+  { id: 'dalam', name: 'Dalam', image: dalamImg },
+  { id: 'luar-dan-dalam', name: 'Luar & Dalam', image: luarDalamImg },
+  { id: 'tanpa-laminasi', name: 'Tanpa Laminasi', image: tanpaLaminasiImg },
+];
+
+export const LAMINATION_TYPE_OPTIONS = [
+  { id: 'glossy', name: 'Glossy', image: glossyImg },
+  { id: 'doff', name: 'Doff', image: doffImg },
+];
+
+export const COLOR_OPTIONS = [
+  { id: '1-sisi', name: '1 Sisi', description: 'Cetak warna pada 1 sisi kemasan', image: satuSisiImg },
+  { id: '2-sisi', name: '2 Sisi', description: 'Cetak warna pada 2 sisi kemasan', image: duaSisiImg },
+];
+
+/**
+ * Format angka ke Rupiah
+ */
+export const formatRupiah = (amount) => {
+  if (!amount && amount !== 0) return '-';
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
 };

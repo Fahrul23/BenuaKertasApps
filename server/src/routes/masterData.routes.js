@@ -64,36 +64,57 @@ router.patch('/box-models/:id/toggle', masterDataController.toggleBoxModelStatus
 // MATERIALS
 // ==========================================
 
-/**
- * GET /api/master-data/materials
- * Get all active materials
- */
+/** GET /api/master-data/materials — Get all active materials */
 router.get('/materials', masterDataController.getMaterials);
 
-/**
- * GET /api/master-data/materials/:code
- * Get material by code
- */
-router.get('/materials/:code', masterDataController.getMaterialByCode);
+/** GET /api/master-data/materials/all — Get all materials (including inactive) - for admin */
+router.get('/materials/all', masterDataController.getAllMaterials);
+
+/** GET /api/master-data/materials/code/:code — Get material by code */
+router.get('/materials/code/:code', masterDataController.getMaterialByCode);
+
+/** GET /api/master-data/materials/:id — Get material by ID */
+router.get('/materials/:id', masterDataController.getMaterialById);
+
+/** POST /api/master-data/materials — Create new material */
+router.post('/materials', masterDataController.createMaterial);
+
+/** PUT /api/master-data/materials/:id — Update material */
+router.put('/materials/:id', masterDataController.updateMaterial);
+
+/** DELETE /api/master-data/materials/:id — Delete material */
+router.delete('/materials/:id', masterDataController.deleteMaterial);
+
+/** PATCH /api/master-data/materials/:id/toggle — Toggle material active status */
+router.patch('/materials/:id/toggle', masterDataController.toggleMaterialStatus);
 
 // ==========================================
-// FINISHING OPTIONS
+// FINISHING OPTIONS CRUD
 // ==========================================
 
-/**
- * GET /api/master-data/finishing-options
- * Get all active finishing options
- */
+/** GET /api/master-data/finishing-options — active only */
 router.get('/finishing-options', masterDataController.getFinishingOptions);
 
-/**
- * GET /api/master-data/finishing-options/:code
- * Get finishing option by code
- */
-router.get('/finishing-options/:code', masterDataController.getFinishingOptionByCode);
+/** GET /api/master-data/finishing-options/all — admin */
+router.get('/finishing-options/all', masterDataController.getAllFinishingOptions);
+
+/** GET /api/master-data/finishing-options/:id — by ID */
+router.get('/finishing-options/:id', masterDataController.getFinishingOptionById);
+
+/** POST /api/master-data/finishing-options — create */
+router.post('/finishing-options', masterDataController.createFinishingOption);
+
+/** PUT /api/master-data/finishing-options/:id — update */
+router.put('/finishing-options/:id', masterDataController.updateFinishingOption);
+
+/** DELETE /api/master-data/finishing-options/:id — delete */
+router.delete('/finishing-options/:id', masterDataController.deleteFinishingOption);
+
+/** PATCH /api/master-data/finishing-options/:id/toggle — toggle status */
+router.patch('/finishing-options/:id/toggle', masterDataController.toggleFinishingOptionStatus);
 
 // ==========================================
-// PRICING RULES
+// PRICING RULES — 7-field matrix CRUD
 // ==========================================
 
 /**
@@ -102,15 +123,86 @@ router.get('/finishing-options/:code', masterDataController.getFinishingOptionBy
  */
 router.get('/pricing-rules', masterDataController.getPricingRules);
 
+/**
+ * GET /api/master-data/pricing-rules/all
+ * Get all pricing rules (including inactive) - for admin
+ */
+router.get('/pricing-rules/all', masterDataController.getAllPricingRules);
+
+/**
+ * POST /api/master-data/pricing-rules/lookup
+ * Lookup harga berdasarkan kombinasi 7 field
+ */
+router.post('/pricing-rules/lookup', masterDataController.lookupPricingRule);
+
+/**
+ * GET /api/master-data/pricing-rules/:id
+ * Get pricing rule by ID
+ */
+router.get('/pricing-rules/:id', masterDataController.getPricingRuleById);
+
+/**
+ * POST /api/master-data/pricing-rules
+ * Create or upsert pricing rule
+ */
+router.post('/pricing-rules', masterDataController.createPricingRule);
+
+/**
+ * PUT /api/master-data/pricing-rules/:id
+ * Update pricing rule by ID
+ */
+router.put('/pricing-rules/:id', masterDataController.updatePricingRule);
+
+/**
+ * DELETE /api/master-data/pricing-rules/:id
+ * Delete pricing rule
+ */
+router.delete('/pricing-rules/:id', masterDataController.deletePricingRule);
+
+/**
+ * PATCH /api/master-data/pricing-rules/:id/toggle
+ * Toggle pricing rule active status
+ */
+router.patch('/pricing-rules/:id/toggle', masterDataController.togglePricingRuleStatus);
+
 // ==========================================
 // BANK ACCOUNTS
 // ==========================================
 
 /**
- * GET /api/master-data/bank-accounts
- * Get all active bank accounts
+ * GET /api/master-data/bank-accounts — active only (for customers)
  */
 router.get('/bank-accounts', masterDataController.getBankAccounts);
+
+/**
+ * GET /api/master-data/bank-accounts/all — all accounts (for admin)
+ */
+router.get('/bank-accounts/all', masterDataController.getAllBankAccounts);
+
+/**
+ * GET /api/master-data/bank-accounts/:id — get one
+ */
+router.get('/bank-accounts/:id', masterDataController.getBankAccountById);
+
+/**
+ * POST /api/master-data/bank-accounts — create
+ */
+router.post('/bank-accounts', masterDataController.createBankAccount);
+
+/**
+ * PUT /api/master-data/bank-accounts/:id — update
+ */
+router.put('/bank-accounts/:id', masterDataController.updateBankAccount);
+
+/**
+ * PATCH /api/master-data/bank-accounts/:id/toggle — toggle status
+ */
+router.patch('/bank-accounts/:id/toggle', masterDataController.toggleBankAccountStatus);
+
+/**
+ * DELETE /api/master-data/bank-accounts/:id — delete
+ */
+router.delete('/bank-accounts/:id', masterDataController.deleteBankAccount);
 
 // ==========================================
 // PRICE CALCULATION
@@ -118,8 +210,9 @@ router.get('/bank-accounts', masterDataController.getBankAccounts);
 
 /**
  * POST /api/master-data/calculate-price
- * Calculate order price
+ * Calculate order price berdasarkan PricingRule 7-field matrix
  */
 router.post('/calculate-price', masterDataController.calculatePrice);
 
 export default router;
+

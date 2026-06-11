@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Navbar, Footer, Stepper } from '@/components';
 import { getVisibleSteps, NEXT_BUTTON_TEXT } from './constants';
+import { calculatorAPI } from '@/services/api';
 import ModelStep from './components/ModelStep';
 import SizeStep from './components/SizeStep';
 import MaterialStep from './components/MaterialStep';
@@ -11,33 +12,52 @@ import FinishingStep from './components/FinishingStep';
 import UploadStep from './components/UploadStep';
 import QuantityStep from './components/QuantityStep';
 import ReviewStep from './components/ReviewStep';
+import PriceSummary from './components/PriceSummary';
 import earlockBoxDepanImg from '@/assets/earlock-box-depan.svg';
 import earlockBoxSampingImg from '@/assets/earlock-box-samping.svg';
 import topBottomBoxImg from '@/assets/top-bottom-box.svg';
 import lunchBoxImg from '@/assets/lunch-box.svg';
-import clamshellBoxImg from '@/assets/clamshell-box.svg';
 import trayBoxImg from '@/assets/tray-box.svg';
 
 const CustomOrderPage = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
-  const [isEditMode, setIsEditMode] = useState(false); // Track if editing from review
+  const [isEditMode, setIsEditMode] = useState(false);
   const [selectedModel, setSelectedModel] = useState(null);
   const [sizes, setSizes] = useState({
     panjang: '',
     lebar: '',
     tinggi: '',
-    tinggiTutup: '', // For Top Bottom Box only
+    tinggiTutup: '',
+    lidah: '',
   });
   const [selectedMaterial, setSelectedMaterial] = useState(null);
   const [selectedThickness, setSelectedThickness] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
-  const [selectedFinishing, setSelectedFinishing] = useState(null);
+  const [laminationSide, setLaminationSide] = useState(null);
+  const [laminationType, setLaminationType] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [note, setNote] = useState('');
   const [quantity, setQuantity] = useState('');
 
-  // Use default box data (earlock-box)
+  // ============ PRICING ENGINE STATE ============
+  const [pricingData, setPricingData] = useState({
+    paperWidth: null,
+    paperHeight: null,
+    planoType: null,
+    planoWidth: null,
+    planoHeight: null,
+    jumlahMata: null,
+    planoOrientation: null,
+    hargaMaterial: null,
+    hargaWarna: null,
+    hargaLaminasi: null,
+    subtotalPerUnit: null,
+    markup: 85,
+    totalPrice: null,
+  });
+  const [pricingError, setPricingError] = useState(null);
+
   const boxData = {
     title: 'CUSTOM BOX',
     description: 'Atur spesifikasi custom box sesuai kebutuhan, perhatikan setiap langkah di setiap bagiannya terisi sesuai dengan instruksi',
@@ -46,18 +66,73 @@ const CustomOrderPage = () => {
       { id: 'earlock-box-samping', name: 'Earlock Box Samping', image: earlockBoxSampingImg },
       { id: 'top-bottom-box', name: 'Top Bottom Box', image: topBottomBoxImg },
       { id: 'lunch-box', name: 'Lunch Box', image: lunchBoxImg },
-      { id: 'clamshell-box', name: 'Clamshell Box', image: clamshellBoxImg },
       { id: 'tray-box', name: 'Tray Box', image: trayBoxImg },
     ]
   };
 
+  // ============ AUTO PRICE CALCULATION ============
+  const calculatePricing = useCallback(async () => {
+    // Need at minimum: boxModel + sizes to start calculating
+    if (!selectedModel || !sizes.panjang || !sizes.lebar || !sizes.tinggi) {
+      return;
+    }
+
+    try {
+      setPricingError(null);
+      const requestData = {
+        boxModel: selectedModel,
+        panjang: parseFloat(sizes.panjang),
+        lebar: parseFloat(sizes.lebar),
+        tinggi: parseFloat(sizes.tinggi),
+      };
+
+      // Optional extras
+      if (sizes.tinggiTutup) requestData.tinggiTutup = parseFloat(sizes.tinggiTutup);
+      if (sizes.lidah) requestData.lidah = parseFloat(sizes.lidah);
+      if (selectedMaterial) requestData.material = selectedMaterial;
+      if (selectedThickness) requestData.materialThickness = parseInt(selectedThickness);
+      if (selectedColor) requestData.colorOption = selectedColor;
+      if (laminationSide) requestData.laminationSide = laminationSide;
+      if (quantity) requestData.quantity = parseInt(quantity);
+
+      const result = await calculatorAPI.calculatePrice(requestData);
+
+      if (result.success) {
+        setPricingData(prev => ({
+          ...prev,
+          ...result.data,
+        }));
+      } else {
+        setPricingError(result.message);
+      }
+    } catch (err) {
+      setPricingError(err.message);
+    }
+  }, [selectedModel, sizes, selectedMaterial, selectedThickness, selectedColor, laminationSide, quantity]);
+
+  // Recalculate pricing when relevant data changes
+  useEffect(() => {
+    // Only calculate after step 2 (sizes) at minimum
+    if (selectedModel && sizes.panjang && sizes.lebar && sizes.tinggi) {
+      const timer = setTimeout(() => {
+        calculatePricing();
+      }, 300); // debounce
+      return () => clearTimeout(timer);
+    }
+  }, [calculatePricing]);
+
+  // Reset thickness when material changes (because GSM options differ)
+  const handleMaterialSelect = (materialId) => {
+    setSelectedMaterial(materialId);
+    // Reset thickness if current selection isn't valid for new material
+    setSelectedThickness(null);
+  };
+
   const handleNext = () => {
-    // If in edit mode, return to review (step 8)
     if (isEditMode) {
       setCurrentStep(8);
       setIsEditMode(false);
     } else {
-      // Normal flow: go to next step
       if (currentStep < 8) {
         setCurrentStep(currentStep + 1);
       }
@@ -65,12 +140,10 @@ const CustomOrderPage = () => {
   };
 
   const handlePrev = () => {
-    // If in edit mode and going back, cancel edit mode and return to review
     if (isEditMode) {
       setCurrentStep(8);
       setIsEditMode(false);
     } else {
-      // Normal flow: go to previous step
       if (currentStep > 1) {
         setCurrentStep(currentStep - 1);
       }
@@ -83,7 +156,6 @@ const CustomOrderPage = () => {
   };
 
   const handleEditAll = () => {
-    // Edit All: reset to step 1 without edit mode (normal flow)
     setIsEditMode(false);
     setCurrentStep(1);
   };
@@ -101,35 +173,32 @@ const CustomOrderPage = () => {
       return selectedModel !== null;
     }
     if (currentStep === 2) {
-      // Check if all size fields have values and are greater than 0
       const basicSizesValid = sizes.panjang > 0 && sizes.lebar > 0 && sizes.tinggi > 0;
-      // For Top Bottom Box, also check tinggiTutup
       if (selectedModel === 'top-bottom-box') {
         return basicSizesValid && sizes.tinggiTutup > 0;
+      }
+      if (selectedModel === 'earlock-box-samping') {
+        return basicSizesValid && sizes.lidah > 0;
       }
       return basicSizesValid;
     }
     if (currentStep === 3) {
-      // Check if material and thickness are selected
       return selectedMaterial !== null && selectedThickness !== null;
     }
     if (currentStep === 4) {
-      // Check if color is selected
       return selectedColor !== null;
     }
     if (currentStep === 5) {
-      // Check if finishing is selected
-      return selectedFinishing !== null;
+      if (!laminationSide) return false;
+      if (laminationSide !== 'tanpa-laminasi' && !laminationType) return false;
+      return true;
     }
     if (currentStep === 6) {
-      // Check if file is uploaded (note is optional)
       return uploadedFile !== null;
     }
     if (currentStep === 7) {
-      // Check if quantity is selected
-      return quantity !== '';
+      return quantity !== '' && parseInt(quantity) >= 1;
     }
-    // For other steps, allow to proceed (will be implemented later)
     return true;
   };
 
@@ -187,8 +256,13 @@ const CustomOrderPage = () => {
                 </p>
               </div>
 
+              {/* Price Summary — Show after step 2 */}
+              {currentStep >= 2 && (
+                <PriceSummary pricingData={{ ...pricingData, quantity }} />
+              )}
+
               {/* WhatsApp Consultation Box */}
-              <div className="bg-color-secondary rounded-xl p-6 mt-8">
+              <div className="bg-color-secondary rounded-xl p-6 mt-6">
                 <p className="text-white text-sm mb-4">
                   Jika masih ada yang ingin ditanyakan seputar custom packaging Box ini bisa langsung hubungi kami via whatsapp
                 </p>
@@ -215,6 +289,7 @@ const CustomOrderPage = () => {
                   sizes={sizes}
                   onSizeChange={handleSizeChange}
                   selectedModel={selectedModel}
+                  planoInfo={pricingData}
                 />
               )}
 
@@ -223,7 +298,7 @@ const CustomOrderPage = () => {
                 <MaterialStep
                   selectedMaterial={selectedMaterial}
                   selectedThickness={selectedThickness}
-                  onMaterialSelect={setSelectedMaterial}
+                  onMaterialSelect={handleMaterialSelect}
                   onThicknessSelect={setSelectedThickness}
                 />
               )}
@@ -239,8 +314,10 @@ const CustomOrderPage = () => {
               {/* Step 5: Finishing Selection */}
               {currentStep === 5 && (
                 <FinishingStep
-                  selectedFinishing={selectedFinishing}
-                  onFinishingSelect={setSelectedFinishing}
+                  laminationSide={laminationSide}
+                  laminationType={laminationType}
+                  onSideSelect={setLaminationSide}
+                  onTypeSelect={setLaminationType}
                 />
               )}
 
@@ -258,7 +335,7 @@ const CustomOrderPage = () => {
               {currentStep === 7 && (
                 <QuantityStep
                   quantity={quantity}
-                  onQuantityChange={(e) => setQuantity(e.target.value)}
+                  onQuantityChange={setQuantity}
                 />
               )}
 
@@ -270,10 +347,12 @@ const CustomOrderPage = () => {
                   selectedMaterial={selectedMaterial}
                   selectedThickness={selectedThickness}
                   selectedColor={selectedColor}
-                  selectedFinishing={selectedFinishing}
+                  laminationSide={laminationSide}
+                  laminationType={laminationType}
                   uploadedFile={uploadedFile}
                   quantity={quantity}
                   boxData={boxData}
+                  pricingData={pricingData}
                   onEditStep={handleEditStep}
                   onEditAll={handleEditAll}
                 />

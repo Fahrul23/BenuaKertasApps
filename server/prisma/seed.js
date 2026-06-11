@@ -20,9 +20,7 @@ async function main() {
         email: 'admin@benuakertas.com',
         password: hashedPassword,
         name: 'Admin Benua Kertas',
-        phone: '081234567890',
         role: 'ADMIN',
-        isActive: true,
       },
     });
     console.log(`✅ Admin created: ${admin.email}`);
@@ -41,9 +39,7 @@ async function main() {
         email: 'user@benuakertas.com',
         password: hashedPassword,
         name: 'John Doe',
-        phone: '081234567891',
         role: 'USER',
-        isActive: true,
       },
     });
     console.log(`✅ User created: ${user.email}\n`);
@@ -82,36 +78,12 @@ async function main() {
       basePrice: 6000,
     },
     {
-      code: 'sleeve-box',
-      name: 'Sleeve Box',
-      description: 'Box dengan sleeve pembungkus untuk tampilan elegan',
-      imageUrl: '/assets/sleeve-box.svg',
-      isActive: true,
-      basePrice: 5500,
-    },
-    {
-      code: 'tuck-end-box',
-      name: 'Tuck End Box',
-      description: 'Box dengan penutup tuck-in yang praktis',
-      imageUrl: '/assets/tuck-end-box.svg',
-      isActive: true,
-      basePrice: 4500,
-    },
-    {
       code: 'lunch-box',
       name: 'Lunch Box',
       description: 'Box khusus untuk kemasan makanan',
       imageUrl: '/assets/lunch-box.svg',
       isActive: true,
       basePrice: 4800,
-    },
-    {
-      code: 'clamshell-box',
-      name: 'Clamshell Box',
-      description: 'Box dengan engsel untuk kemudahan buka tutup',
-      imageUrl: '/assets/clamshell-box.svg',
-      isActive: true,
-      basePrice: 5300,
     },
     {
       code: 'tray-box',
@@ -138,7 +110,7 @@ async function main() {
   console.log('');
 
   // ==========================================
-  // 3. Seed Material
+  // 3. Seed Material (tanpa price per GSM)
   // ==========================================
   console.log('📄 Seeding materials...');
   
@@ -149,10 +121,6 @@ async function main() {
       description: 'Kertas duplex berkualitas tinggi dengan permukaan halus',
       imageUrl: '/assets/duplex.svg',
       isActive: true,
-      price300gsm: 450,
-      price350gsm: 520,
-      price400gsm: 600,
-      price450gsm: 680,
     },
     {
       code: 'ivory',
@@ -160,21 +128,6 @@ async function main() {
       description: 'Kertas ivory premium dengan warna putih bersih',
       imageUrl: '/assets/ivory.svg',
       isActive: true,
-      price300gsm: 550,
-      price350gsm: 630,
-      price400gsm: 720,
-      price450gsm: 810,
-    },
-    {
-      code: 'kraft',
-      name: 'Kraft',
-      description: 'Kertas kraft natural dengan tampilan eco-friendly',
-      imageUrl: '/assets/kraft.svg',
-      isActive: true,
-      price300gsm: 380,
-      price350gsm: 440,
-      price400gsm: 510,
-      price450gsm: 580,
     },
   ];
 
@@ -193,34 +146,19 @@ async function main() {
   console.log('');
 
   // ==========================================
-  // 4. Seed FinishingOption
+  // 4. Seed FinishingOption (tanpa additionalPrice)
   // ==========================================
   console.log('✨ Seeding finishing options...');
   
   const finishingOptions = [
-    {
-      code: 'glossy',
-      name: 'Glossy',
-      description: 'Laminasi glossy mengkilap untuk tampilan premium',
-      imageUrl: '/assets/glossy.svg',
-      isActive: true,
-      additionalPrice: 800,
-    },
-    {
-      code: 'doff',
-      name: 'Doff',
-      description: 'Laminasi doff matte untuk tampilan elegan',
-      imageUrl: '/assets/doff.svg',
-      isActive: true,
-      additionalPrice: 850,
-    },
+    // === Sisi Laminasi (category: side) ===
     {
       code: 'sisi-luar',
       name: 'Sisi Luar',
       description: 'Laminasi pada sisi luar saja',
       imageUrl: '/assets/sisi-luar.svg',
       isActive: true,
-      additionalPrice: 600,
+      category: 'side',
     },
     {
       code: 'dalam',
@@ -228,15 +166,15 @@ async function main() {
       description: 'Laminasi pada bagian dalam',
       imageUrl: '/assets/dalam.svg',
       isActive: true,
-      additionalPrice: 600,
+      category: 'side',
     },
     {
-      code: 'luar-dalam',
+      code: 'luar-dan-dalam',
       name: 'Luar & Dalam',
       description: 'Laminasi pada kedua sisi',
       imageUrl: '/assets/luar-dalam.svg',
       isActive: true,
-      additionalPrice: 1200,
+      category: 'side',
     },
     {
       code: 'tanpa-laminasi',
@@ -244,7 +182,24 @@ async function main() {
       description: 'Tanpa laminasi, hanya cetak biasa',
       imageUrl: '/assets/tanpa-laminasi.svg',
       isActive: true,
-      additionalPrice: 0,
+      category: 'side',
+    },
+    // === Tipe Laminasi (category: type) ===
+    {
+      code: 'glossy',
+      name: 'Glossy',
+      description: 'Laminasi glossy mengkilap untuk tampilan premium',
+      imageUrl: '/assets/glossy.svg',
+      isActive: true,
+      category: 'type',
+    },
+    {
+      code: 'doff',
+      name: 'Doff',
+      description: 'Laminasi doff matte untuk tampilan elegan',
+      imageUrl: '/assets/doff.svg',
+      isActive: true,
+      category: 'type',
     },
   ];
 
@@ -257,59 +212,122 @@ async function main() {
       await prisma.finishingOption.create({ data: finishing });
       console.log(`✅ Finishing option created: ${finishing.name}`);
     } else {
-      console.log(`⚠️  Finishing option already exists: ${finishing.name}`);
+      await prisma.finishingOption.update({
+        where: { code: finishing.code },
+        data: { category: finishing.category },
+      });
+      console.log(`🔄 Finishing option updated: ${finishing.name}`);
     }
   }
   console.log('');
 
   // ==========================================
-  // 5. Seed PricingRule
+  // 5. Seed PlanoType (NEW)
   // ==========================================
-  console.log('💰 Seeding pricing rules...');
-  
-  const pricingRules = [
-    {
-      name: 'Standard Pricing (1000-2999 pcs)',
-      minQuantity: 1000,
-      maxQuantity: 2999,
-      minTotalArea: null,
-      maxTotalArea: null,
-      pricePerUnit: 1.0,
-      discountPercent: 0,
-      isActive: true,
-    },
-    {
-      name: 'Bulk Discount 5% (3000-4999 pcs)',
-      minQuantity: 3000,
-      maxQuantity: 4999,
-      minTotalArea: null,
-      maxTotalArea: null,
-      pricePerUnit: 1.0,
-      discountPercent: 5,
-      isActive: true,
-    },
-    {
-      name: 'Bulk Discount 10% (5000+ pcs)',
-      minQuantity: 5000,
-      maxQuantity: null,
-      minTotalArea: null,
-      maxTotalArea: null,
-      pricePerUnit: 1.0,
-      discountPercent: 10,
-      isActive: true,
-    },
+  console.log('📐 Seeding plano types...');
+
+  const planoTypes = [
+    { code: '65x100', width: 65, height: 100, effectiveWidth: 63, effectiveHeight: 97.5, sortOrder: 1 },
+    { code: '79x109', width: 79, height: 109, effectiveWidth: 77, effectiveHeight: 106.5, sortOrder: 2 },
+    { code: '90x120', width: 90, height: 120, effectiveWidth: 88, effectiveHeight: 117.5, sortOrder: 3 },
   ];
 
-  for (const rule of pricingRules) {
-    const existing = await prisma.pricingRule.findFirst({
-      where: { name: rule.name },
+  for (const plano of planoTypes) {
+    const existing = await prisma.planoType.findUnique({
+      where: { code: plano.code },
     });
 
     if (!existing) {
-      await prisma.pricingRule.create({ data: rule });
-      console.log(`✅ Pricing rule created: ${rule.name}`);
+      await prisma.planoType.create({ data: plano });
+      console.log(`✅ Plano type created: ${plano.code}`);
     } else {
-      console.log(`⚠️  Pricing rule already exists: ${rule.name}`);
+      console.log(`⚠️  Plano type already exists: ${plano.code}`);
+    }
+  }
+  console.log('');
+
+  // ==========================================
+  // 6. Seed MaterialPrice (NEW)
+  // ==========================================
+  console.log('💰 Seeding material prices...');
+
+  const materialPrices = [
+    // Duplex
+    { planoCode: '65x100', materialCode: 'duplex', thickness: 310, price: 1433990 },
+    { planoCode: '65x100', materialCode: 'duplex', thickness: 350, price: 1576416 },
+    { planoCode: '65x100', materialCode: 'duplex', thickness: 400, price: 1772225 },
+    { planoCode: '79x109', materialCode: 'duplex', thickness: 310, price: 1899706 },
+    { planoCode: '79x109', materialCode: 'duplex', thickness: 350, price: 2088387 },
+    { planoCode: '79x109', materialCode: 'duplex', thickness: 400, price: 2347789 },
+    { planoCode: '90x120', materialCode: 'duplex', thickness: 310, price: 2382629 },
+    { planoCode: '90x120', materialCode: 'duplex', thickness: 350, price: 2619275 },
+    { planoCode: '90x120', materialCode: 'duplex', thickness: 400, price: 2944620 },
+
+    // Ivory
+    { planoCode: '65x100', materialCode: 'ivory', thickness: 230, price: 1046500 },
+    { planoCode: '65x100', materialCode: 'ivory', thickness: 250, price: 1137500 },
+    { planoCode: '65x100', materialCode: 'ivory', thickness: 270, price: 1228500 },
+    { planoCode: '65x100', materialCode: 'ivory', thickness: 300, price: 1365000 },
+    { planoCode: '79x109', materialCode: 'ivory', thickness: 230, price: 1386371 },
+    { planoCode: '79x109', materialCode: 'ivory', thickness: 250, price: 1506925 },
+    { planoCode: '79x109', materialCode: 'ivory', thickness: 270, price: 1627479 },
+    { planoCode: '79x109', materialCode: 'ivory', thickness: 300, price: 1808310 },
+    { planoCode: '90x120', materialCode: 'ivory', thickness: 230, price: 1738800 },
+    { planoCode: '90x120', materialCode: 'ivory', thickness: 250, price: 1890000 },
+    { planoCode: '90x120', materialCode: 'ivory', thickness: 270, price: 2041200 },
+    { planoCode: '90x120', materialCode: 'ivory', thickness: 300, price: 2268000 },
+  ];
+
+  for (const mp of materialPrices) {
+    const existing = await prisma.materialPrice.findFirst({
+      where: {
+        planoCode: mp.planoCode,
+        materialCode: mp.materialCode,
+        thickness: mp.thickness,
+      },
+    });
+
+    if (!existing) {
+      await prisma.materialPrice.create({ data: mp });
+      console.log(`✅ Material price created: ${mp.planoCode} × ${mp.materialCode} × ${mp.thickness}gsm`);
+    } else {
+      await prisma.materialPrice.update({
+        where: { id: existing.id },
+        data: { price: mp.price },
+      });
+      console.log(`🔄 Material price updated: ${mp.planoCode} × ${mp.materialCode} × ${mp.thickness}gsm`);
+    }
+  }
+  console.log('');
+
+  // ==========================================
+  // 7. Seed ColorPrice (NEW)
+  // ==========================================
+  console.log('🎨 Seeding color prices...');
+
+  const colorPrices = [
+    { thicknessMin: 230, thicknessMax: 310, pricePerSide: 460000 },
+    { thicknessMin: 350, thicknessMax: 350, pricePerSide: 550000 },
+    { thicknessMin: 400, thicknessMax: 400, pricePerSide: 600000 },
+  ];
+
+  for (const cp of colorPrices) {
+    const existing = await prisma.colorPrice.findFirst({
+      where: {
+        thicknessMin: cp.thicknessMin,
+        thicknessMax: cp.thicknessMax,
+      },
+    });
+
+    if (!existing) {
+      await prisma.colorPrice.create({ data: cp });
+      console.log(`✅ Color price created: ${cp.thicknessMin}-${cp.thicknessMax}gsm = Rp ${cp.pricePerSide.toLocaleString('id-ID')}`);
+    } else {
+      await prisma.colorPrice.update({
+        where: { id: existing.id },
+        data: { pricePerSide: cp.pricePerSide },
+      });
+      console.log(`🔄 Color price updated: ${cp.thicknessMin}-${cp.thicknessMax}gsm`);
     }
   }
   console.log('');

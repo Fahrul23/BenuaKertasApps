@@ -1,19 +1,5 @@
 import React from 'react';
-import kopiKenanganLogo from '@/assets/kopi-kenangan.svg';
-import richeeseFactoryLogo from '@/assets/richeese-factory.svg';
-import jcoLogo from '@/assets/j-co.svg';
-import hokbenLogo from '@/assets/hokben.svg';
-import bakmiGmLogo from '@/assets/bakmi-gm.svg';
-import chatimeLogo from '@/assets/chatime.svg';
-
-const LOGOS = [
-    { name: 'Kopi Kenangan', url: kopiKenanganLogo },
-    { name: 'Richeese Factory', url: richeeseFactoryLogo },
-    { name: 'J.CO', url: jcoLogo },
-    { name: 'HokBen', url: hokbenLogo },
-    { name: 'Bakmi GM', url: bakmiGmLogo },
-    { name: 'Chatime', url: chatimeLogo }
-];
+import { LOGOS } from '../constants';
 
 const TrustedBySection = () => {
     return (
