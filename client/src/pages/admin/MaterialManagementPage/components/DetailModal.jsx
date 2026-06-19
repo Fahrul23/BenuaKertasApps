@@ -1,9 +1,6 @@
 import { X, Package, Calendar, Tag, FileText, Image } from 'lucide-react';
 
-const formatPrice = (val) => {
-  if (val == null || val === '') return '-';
-  return `Rp ${parseFloat(val).toLocaleString('id-ID')}`;
-};
+
 
 const formatDate = (dateStr) => {
   if (!dateStr) return '-';
@@ -97,25 +94,7 @@ const MaterialDetailModal = ({ material, onClose }) => {
             )}
           </div>
 
-          {/* GSM Prices */}
-          <div className="p-4 bg-color-lighter rounded-xl space-y-3">
-            <p className="text-xs font-bold text-color-darker uppercase tracking-widest">
-              Harga per Ketebalan (Rp/m²)
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { label: '300 gsm', value: material.price300gsm },
-                { label: '350 gsm', value: material.price350gsm },
-                { label: '400 gsm', value: material.price400gsm },
-                { label: '450 gsm', value: material.price450gsm },
-              ].map(({ label, value }) => (
-                <div key={label} className="bg-white rounded-lg p-3 border border-color-light">
-                  <p className="text-xs text-gray-500 mb-1">{label}</p>
-                  <p className="text-sm font-bold text-color-darker">{formatPrice(value)}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+
 
           {/* Timestamps */}
           <div className="p-4 bg-gray-50 rounded-xl space-y-3">

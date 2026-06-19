@@ -125,6 +125,35 @@ model ColorPrice {
   @@map("color_prices")
 }
 
+model CmykBlokPrice {
+  id            Int      @id @default(autoincrement())
+  thicknessMin  Int                // gramatur minimal range, contoh: 210
+  thicknessMax  Int                // gramatur maksimal range, contoh: 330
+  cetakPrice    Float              // harga cetak, contoh: 460000
+  dragPrice     Float              // harga per unit drag, contoh: 120
+  platPrice     Float              // harga plat flat, contoh: 170000
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([thicknessMin])
+  @@index([isActive])
+  @@map("cmyk_blok_prices")
+}
+
+model PricingConfig {
+  id                   Int      @id @default(autoincrement())
+  pondMultiplier       Float    @default(85)     // hargaPond = qty × ini
+  packingDivisor       Int      @default(500)    // qty ÷ ini
+  packingMultiplier    Float    @default(15000)  // hasil ÷ dikali ini
+  laminasiMultiplier   Float    @default(0.3)    // P × L × ini × qty
+  pisauPrice           Float    @default(700000) // harga pisau flat
+  dragThreshold        Int      @default(1000)   // qty dikurangi ini sebelum dikali dragPrice
+  updatedAt            DateTime @updatedAt
+
+  @@map("pricing_config")
+}
+
 // ==========================================
 // Order Table (UPDATED with pricing engine fields)
 // ==========================================
@@ -151,20 +180,28 @@ model Order {
   customerNote            String?              @db.Text
   quantity                Int
 
-  // === Pricing Engine Fields (NEW) ===
+  // === Pricing Engine v3 Fields ===
   planoType               String?              @db.VarChar(20)   // "65x100" | "79x109" | "90x120"
   paperWidth              Float?                                  // Lebar kertas hasil formula (cm)
   paperHeight             Float?                                  // Panjang kertas hasil formula (cm)
   jumlahMata              Int?                                    // Hasil kalkulasi mata terbanyak
   planoOrientation        String?              @db.VarChar(20)   // "normal" | "rotasi"
-  hargaMaterial           Float?                                  // Dari MaterialPrice lookup
-  hargaWarna              Float?                                  // Dari ColorPrice × colorSides
-  hargaLaminasi           Float?                                  // plano.width × plano.height × 0.3
-  subtotalPerUnit         Float?                                  // hargaMaterial + hargaWarna + hargaLaminasi
-  markup                  Int                  @default(85)       // Koefisien markup tetap
-  totalPrice              Float?                                  // subtotalPerUnit × quantity × markup
+  qtyPlano                Float?                                  // qtyBox ÷ jumlahMata ÷ 500
+  qtyRim                  Int?                                    // qtyBox ÷ 500
 
-  // === Legacy fields kept for backward compat ===
+  // Breakdown harga produksi (v3)
+  hargaKertas             Float?                                  // Dari MaterialPrice lookup
+  hargaCetak              Float?                                  // Dari CmykBlokPrice lookup
+  hargaDrag               Float?                                  // (qty - 1000) × dragPrice
+  hargaPlat               Float?                                  // flat dari CmykBlokPrice
+  hargaPisau              Float?                                  // flat dari PricingConfig
+  hargaPond               Float?                                  // qty × 85
+  hargaPacking            Float?                                  // (qty ÷ 500) × 15000
+  hargaLaminasi           Float?                                  // actualLength × actualWidth × 0.3 × qty
+  hargaPerPcs             Float?                                  // totalBayar ÷ qty
+
+  // === Total & Legacy fields ===
+  totalBayar              Float?                                  // sum semua komponen harga
   subtotal                Decimal              @db.Decimal(15, 2)
   tax                     Decimal              @default(0.00) @db.Decimal(15, 2)
   totalAmount             Decimal              @db.Decimal(15, 2)

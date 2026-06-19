@@ -60,43 +60,15 @@ export const NEXT_BUTTON_TEXT = {
   5: 'Unggah File',
   6: 'Tentukan Kuantitas',
   7: 'Review Order',
-  8: 'Finish',
+  8: 'Lanjut Pembayaran',
 };
 
 /**
  * Fungsi untuk mendapatkan steps yang akan ditampilkan di stepper
- * berdasarkan currentStep
- * 
- * Logika:
- * - Step 1-5: Tampilkan step 1 sampai current step, ellipsis, dan step 8
- * - Step 6-8: Tampilkan step yang relevan dengan ellipsis
+ * Sekarang dikembalikan semua steps agar pengguna bisa melihat progress secara utuh.
  */
 export const getVisibleSteps = (currentStep) => {
-  // Jika di step 1-5, tampilkan: step 1 sampai current step, ellipsis, step 8
-  if (currentStep <= 5) {
-    const visibleSteps = [];
-    
-    // Tambahkan step 1 sampai current step
-    for (let i = 0; i < currentStep; i++) {
-      visibleSteps.push(ALL_STEPS[i]);
-    }
-    
-    // Tambahkan ellipsis
-    visibleSteps.push({ id: 'ellipsis', label: '', isEllipsis: true });
-    
-    // Tambahkan step 8
-    visibleSteps.push(ALL_STEPS[7]);
-    
-    return visibleSteps;
-  }
-  
-  // Jika di step 6-8, tampilkan semua step yang relevan
-  // Bisa disesuaikan nanti sesuai kebutuhan
-  return [
-    ALL_STEPS[0], // Step 1
-    { id: 'ellipsis', label: '', isEllipsis: true },
-    ...ALL_STEPS.slice(currentStep - 2, currentStep + 1), // Steps around current
-  ];
+  return ALL_STEPS;
 };
 
 // Quantity options (dropdown)

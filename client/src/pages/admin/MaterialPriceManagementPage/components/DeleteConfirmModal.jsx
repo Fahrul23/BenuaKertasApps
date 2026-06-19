@@ -10,15 +10,24 @@ const DeleteConfirmModal = ({ item, itemType = 'Item', onClose, onConfirm }) => 
           </div>
           <h3 className="text-lg font-bold text-gray-900 mb-2">Hapus {itemType}?</h3>
           {item && (
-            <p className="text-sm text-gray-600 mb-1 font-semibold">{item.name}</p>
+            <p className="text-sm text-gray-600 mb-1">
+              <span className="font-semibold">{item.name}</span>
+              {item.code && <span className="text-gray-400"> ({item.code})</span>}
+            </p>
           )}
           <p className="text-sm text-red-600 mt-3">Tindakan ini tidak dapat dibatalkan.</p>
         </div>
         <div className="flex gap-3 p-6 pt-0">
-          <button onClick={onClose} className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium transition-colors">
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium transition-colors"
+          >
             Batal
           </button>
-          <button onClick={onConfirm} className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium transition-colors">
+          <button
+            onClick={onConfirm}
+            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium transition-colors"
+          >
             Hapus
           </button>
         </div>

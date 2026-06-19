@@ -59,9 +59,8 @@ const boxModelStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'benua-kertas/box-models',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'svg'],
+    allowed_formats: ['jpg', 'jpeg', 'png'],
     resource_type: 'auto',
-    transformation: [{ quality: 'auto', width: 500, crop: 'limit' }],
   },
 });
 
@@ -127,12 +126,12 @@ export const uploadBoxModel = multer({
     fileSize: 2 * 1024 * 1024, // 2MB
   },
   fileFilter: (req, file, cb) => {
-    const allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml'];
+    const allowedMimes = ['image/jpeg', 'image/jpg', 'image/png'];
 
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only JPG, PNG, and SVG are allowed.'));
+      cb(new Error('Invalid file type. Only JPG and PNG are allowed.'));
     }
   },
 });

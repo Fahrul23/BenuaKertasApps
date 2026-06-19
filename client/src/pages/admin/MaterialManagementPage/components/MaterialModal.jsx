@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { X, Package } from 'lucide-react';
-import { GSM_PRICES } from '@/constants/masterData';
+import { X, Package, Upload, Loader2 } from 'lucide-react';
+import { uploadAPI } from '@/services/api';
 
-const MaterialModal = ({ mode, material, onClose, onSave }) => {
+const MaterialModal = ({ mode, material, onClose, onSave, onError }) => {
   const isEdit = mode === 'edit';
 
   const [form, setForm] = useState({
@@ -11,12 +11,10 @@ const MaterialModal = ({ mode, material, onClose, onSave }) => {
     description: '',
     imageUrl: '',
     isActive: true,
-    price300gsm: '',
-    price350gsm: '',
-    price400gsm: '',
-    price450gsm: '',
   });
   const [saving, setSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     if (isEdit && material) {
@@ -26,10 +24,6 @@ const MaterialModal = ({ mode, material, onClose, onSave }) => {
         description: material.description || '',
         imageUrl: material.imageUrl || '',
         isActive: material.isActive !== undefined ? material.isActive : true,
-        price300gsm: material.price300gsm != null ? String(material.price300gsm) : '',
-        price350gsm: material.price350gsm != null ? String(material.price350gsm) : '',
-        price400gsm: material.price400gsm != null ? String(material.price400gsm) : '',
-        price450gsm: material.price450gsm != null ? String(material.price450gsm) : '',
       });
     }
   }, [isEdit, material]);
@@ -39,18 +33,49 @@ const MaterialModal = ({ mode, material, onClose, onSave }) => {
     setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
+  // ── Image upload handlers ─────────────────────────────────────────────────
+  const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
+  const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) processUpload(file);
+  };
+
+  const processUpload = async (file) => {
+    if (file.size > 2 * 1024 * 1024) {
+      if (onError) onError('Ukuran file melebihi batas 2MB');
+      return;
+    }
+    const allowed = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowed.includes(file.type)) {
+      if (onError) onError('Format gambar tidak didukung. Gunakan jpg atau png');
+      return;
+    }
+    setIsUploading(true);
+    try {
+      // Reuse the box-model upload endpoint (same folder & restrictions)
+      const res = await uploadAPI.uploadBoxModel(file);
+      if (res.success) {
+        setForm(prev => ({ ...prev, imageUrl: res.data.url }));
+      } else {
+        if (onError) onError(res.message || 'Gagal mengunggah gambar.');
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+      if (onError) onError('Terjadi kesalahan saat mengunggah gambar.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.code.trim() || !form.name.trim()) return;
     setSaving(true);
     try {
-      await onSave({
-        ...form,
-        price300gsm: form.price300gsm !== '' ? parseFloat(form.price300gsm) : null,
-        price350gsm: form.price350gsm !== '' ? parseFloat(form.price350gsm) : null,
-        price400gsm: form.price400gsm !== '' ? parseFloat(form.price400gsm) : null,
-        price450gsm: form.price450gsm !== '' ? parseFloat(form.price450gsm) : null,
-      });
+      await onSave({ ...form });
     } finally {
       setSaving(false);
     }
@@ -131,53 +156,78 @@ const MaterialModal = ({ mode, material, onClose, onSave }) => {
             />
           </div>
 
-          {/* Image URL */}
+          {/* Image Upload */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5">URL Gambar</label>
-            <input
-              type="url"
-              name="imageUrl"
-              value={form.imageUrl}
-              onChange={handleChange}
-              placeholder="https://..."
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-color-primary/30 focus:border-color-primary outline-none transition-all"
-            />
-            {form.imageUrl && (
-              <div className="mt-2 w-16 h-16 border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
-                <img
-                  src={form.imageUrl}
-                  alt="Preview"
-                  className="w-full h-full object-contain"
-                  onError={(e) => { e.target.style.display = 'none'; }}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* GSM Prices */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-2">
-              Harga per GSM (Rp/m²)
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Gambar Material
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {GSM_PRICES.map(({ key, label }) => (
-                <div key={key}>
-                  <label className="block text-xs text-gray-500 mb-1">{label}</label>
-                  <div className="relative">
-                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                    <input
-                      type="number"
-                      name={key}
-                      value={form[key]}
-                      onChange={handleChange}
-                      min="0"
-                      step="0.01"
-                      placeholder="0"
-                      className="w-full pl-7 pr-2 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-color-primary/30 focus:border-color-primary outline-none transition-all"
-                    />
-                  </div>
+
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`relative border-2 border-dashed rounded-xl transition-all duration-300 ${
+                isDragging
+                  ? 'border-color-secondary bg-color-light/30'
+                  : 'border-gray-300 bg-white'
+              } ${form.imageUrl || isUploading ? 'p-6' : 'p-8'} mb-2`}
+            >
+              {isUploading ? (
+                <div className="flex flex-col items-center justify-center text-center py-4">
+                  <Loader2 size={32} className="text-color-secondary animate-spin mb-3" />
+                  <p className="text-gray-900 font-medium">Sedang mengunggah gambar...</p>
                 </div>
-              ))}
+              ) : !form.imageUrl ? (
+                <div className="flex flex-col items-center justify-center text-center">
+                  <div className="w-14 h-14 mb-3 rounded-full bg-gray-50 flex items-center justify-center">
+                    <Upload size={24} className="text-color-secondary" />
+                  </div>
+                  <p className="text-gray-900 font-medium mb-1">
+                    Drag & drop gambar di sini atau
+                  </p>
+                  <label className="cursor-pointer">
+                    <span className="text-color-secondary font-semibold hover:underline">
+                      Pilih File
+                    </span>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept=".jpg,.jpeg,.png"
+                      onChange={(e) => { if (e.target.files[0]) processUpload(e.target.files[0]); }}
+                      disabled={isUploading}
+                    />
+                  </label>
+                  <p className="text-gray-500 text-xs mt-2">
+                    Format: JPG, PNG (Max 2MB)
+                  </p>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-lg border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center flex-shrink-0">
+                      <img
+                        src={form.imageUrl}
+                        alt="Preview"
+                        className="w-full h-full object-contain"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 truncate text-sm max-w-[150px] sm:max-w-xs">
+                        {form.imageUrl.split('/').pop()}
+                      </p>
+                      <p className="text-xs text-green-600 font-medium mt-0.5">Gambar berhasil diunggah</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setForm(prev => ({ ...prev, imageUrl: '' }))}
+                    className="w-8 h-8 rounded-full bg-red-50 hover:bg-red-100 flex items-center justify-center transition-colors flex-shrink-0"
+                  >
+                    <X size={16} className="text-red-500" />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -210,7 +260,7 @@ const MaterialModal = ({ mode, material, onClose, onSave }) => {
             </button>
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || isUploading}
               className="flex-1 px-4 py-2.5 bg-color-darker text-white rounded-xl font-medium hover:bg-color-dark transition-colors text-sm disabled:opacity-60"
             >
               {saving ? 'Menyimpan...' : isEdit ? 'Simpan Perubahan' : 'Tambah Material'}

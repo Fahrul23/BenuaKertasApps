@@ -185,9 +185,14 @@ export const validateOrderData = (data) => {
     errors.push('sizeTinggiTutup is required for top-bottom-box');
   }
 
-  // Validate quantity
-  if (data.quantity && data.quantity < 1) {
-    errors.push('Minimum quantity is 1');
+  // Validate quantity — minimal 1000 (2 rim), kelipatan 500
+  if (data.quantity) {
+    if (data.quantity < 1000) {
+      errors.push('Minimum quantity adalah 1000 pcs (2 rim)');
+    }
+    if (data.quantity % 500 !== 0) {
+      errors.push('Quantity harus kelipatan 500 (1 rim = 500 lembar)');
+    }
   }
 
   return {

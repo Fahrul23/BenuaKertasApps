@@ -1,10 +1,16 @@
 import {
   hitungUkuranKertas,
   rekomendasiPlano,
-  hitungHargaMaterial,
-  hitungHargaWarna,
+  hitungQtyPlano,
+  hitungQtyRim,
+  hitungHargaKertas,
+  hitungHargaCetak,
+  hitungHargaDrag,
+  hitungHargaPlat,
+  hitungHargaPisau,
+  hitungHargaPond,
+  hitungHargaPacking,
   hitungHargaLaminasi,
-  hitungTotalHarga,
   calculateFullPrice,
 } from '../services/pricingEngine.service.js';
 
@@ -67,8 +73,76 @@ export const calculatePlano = async (req, res) => {
 };
 
 /**
+ * POST /api/v1/calculator/pricing
+ * Endpoint utama v3 — kalkulasi harga produksi lengkap
+ * Body: { boxModel, panjang, lebar, tinggi, tinggiTutup?, lidah?,
+ *          material, materialThickness, laminationSide, quantity }
+ * Response: full pricing breakdown (8 komponen + total + per pcs)
+ */
+export const calculatePricing = async (req, res) => {
+  try {
+    const {
+      boxModel,
+      panjang,
+      lebar,
+      tinggi,
+      tinggiTutup,
+      lidah,
+      material,
+      materialThickness,
+      laminationSide,
+      quantity,
+    } = req.body;
+
+    // Validate required fields
+    if (!boxModel || !panjang || !lebar || !tinggi) {
+      return res.status(400).json({
+        success: false,
+        message: 'boxModel, panjang, lebar, dan tinggi wajib diisi.',
+      });
+    }
+
+    // Validate quantity: minimal 1000, kelipatan 500
+    const qtyBox = parseInt(quantity);
+    if (quantity && (qtyBox < 1000 || qtyBox % 500 !== 0)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Quantity minimal 1000 pcs (2 rim) dan harus kelipatan 500.',
+      });
+    }
+
+    // Map request body ke format yang dipakai calculateFullPrice
+    const orderData = {
+      boxModel,
+      sizePanjang: panjang,
+      sizeLebar: lebar,
+      sizeTinggi: tinggi,
+      sizeTinggiTutup: tinggiTutup || null,
+      lidah: lidah || null,
+      material,
+      materialThickness,
+      laminationSide,
+      quantity,
+    };
+
+    const result = await calculateFullPrice(orderData);
+
+    return res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
  * POST /api/v1/calculator/price
- * Terima semua step data, return full price breakdown
+ * Kalkulasi progresif (partial — setiap step user mengisi data)
+ * Jika quantity + material + laminationSide sudah tersedia, hitung full pricing
  */
 export const calculatePrice = async (req, res) => {
   try {
@@ -81,8 +155,6 @@ export const calculatePrice = async (req, res) => {
       lidah,
       material,
       materialThickness,
-      colorOption,
-      colorSides,
       laminationSide,
       quantity,
     } = req.body;
@@ -100,16 +172,10 @@ export const calculatePrice = async (req, res) => {
     if (tinggiTutup) extras.tTutup = tinggiTutup;
     if (lidah) extras.lidah = lidah;
 
-    // Step 1: Paper size
+    // Step 1: Paper size + plano
     const { paperWidth, paperHeight } = hitungUkuranKertas(
-      boxModel,
-      panjang,
-      lebar,
-      tinggi,
-      extras
+      boxModel, panjang, lebar, tinggi, extras
     );
-
-    // Step 2: Plano recommendation
     const plano = await rekomendasiPlano(paperWidth, paperHeight);
     if (!plano) {
       return res.status(400).json({
@@ -126,56 +192,96 @@ export const calculatePrice = async (req, res) => {
       planoHeight: plano.height,
       jumlahMata: plano.jumlahMata,
       planoOrientation: plano.orientasi,
-      hargaMaterial: null,
-      hargaWarna: null,
+      // Pricing components (null until data is available)
+      qtyPlano: null,
+      qtyRim: null,
+      hargaKertas: null,
+      hargaCetak: null,
+      hargaDrag: null,
+      hargaPlat: null,
+      hargaPisau: null,
+      hargaPond: null,
+      hargaPacking: null,
       hargaLaminasi: null,
-      subtotalPerUnit: null,
-      markup: 85,
-      totalPrice: null,
+      totalBayar: null,
+      hargaPerPcs: null,
     };
 
-    // Step 3: Material price (if material data provided)
+    const qtyBox = quantity ? parseInt(quantity) : null;
+
+    // Qty breakdown (jika quantity tersedia)
+    if (qtyBox) {
+      result.qtyPlano = Math.round(hitungQtyPlano(qtyBox, plano.jumlahMata) * 1000) / 1000;
+      result.qtyRim = hitungQtyRim(qtyBox);
+    }
+
+    // Harga kertas (jika material + thickness tersedia)
     if (material && materialThickness) {
       try {
-        result.hargaMaterial = await hitungHargaMaterial(plano.code, material, materialThickness);
+        result.hargaKertas = await hitungHargaKertas(plano.code, material, materialThickness);
       } catch (err) {
-        result.hargaMaterial = null;
-        result.materialError = err.message;
+        result.hargaKertas = null;
+        result.hargaKertasError = err.message;
       }
     }
 
-    // Step 4: Color price (if color data provided)
-    const resolvedColorSides = colorSides || colorOption;
-    if (materialThickness && resolvedColorSides) {
+    // Harga cetak, drag, plat (jika thickness tersedia)
+    if (materialThickness) {
       try {
-        result.hargaWarna = await hitungHargaWarna(materialThickness, resolvedColorSides);
+        result.hargaCetak = await hitungHargaCetak(materialThickness);
+        result.hargaPlat = await hitungHargaPlat(materialThickness);
+        if (qtyBox) {
+          result.hargaDrag = await hitungHargaDrag(qtyBox, materialThickness);
+        }
       } catch (err) {
-        result.hargaWarna = null;
-        result.warnaError = err.message;
+        result.cmykError = err.message;
       }
     }
 
-    // Step 5: Lamination price (if lamination data provided)
-    if (laminationSide) {
-      result.hargaLaminasi = hitungHargaLaminasi(plano.width, plano.height, laminationSide);
+    // Harga pisau, pond, packing (jika qty tersedia)
+    if (qtyBox) {
+      try {
+        result.hargaPisau = await hitungHargaPisau();
+        result.hargaPond = await hitungHargaPond(qtyBox);
+        result.hargaPacking = await hitungHargaPacking(qtyBox);
+      } catch (err) {
+        result.fixedCostError = err.message;
+      }
     }
 
-    // Step 6: Total price (if all components available)
+    // Harga laminasi (jika laminationSide + qty tersedia)
+    if (laminationSide && qtyBox) {
+      try {
+        result.hargaLaminasi = await hitungHargaLaminasi(
+          paperWidth, paperHeight, qtyBox, laminationSide
+        );
+      } catch (err) {
+        result.laminasiError = err.message;
+      }
+    }
+
+    // Total (jika semua komponen tersedia)
     if (
-      result.hargaMaterial !== null &&
-      result.hargaWarna !== null &&
+      result.hargaKertas !== null &&
+      result.hargaCetak !== null &&
+      result.hargaDrag !== null &&
+      result.hargaPlat !== null &&
+      result.hargaPisau !== null &&
+      result.hargaPond !== null &&
+      result.hargaPacking !== null &&
       result.hargaLaminasi !== null &&
-      quantity
+      qtyBox
     ) {
-      const { subtotalPerUnit, totalPrice } = hitungTotalHarga(
-        result.hargaMaterial,
-        result.hargaWarna,
-        result.hargaLaminasi,
-        parseInt(quantity),
-        85
-      );
-      result.subtotalPerUnit = subtotalPerUnit;
-      result.totalPrice = totalPrice;
+      result.totalBayar =
+        result.hargaKertas +
+        result.hargaCetak +
+        result.hargaDrag +
+        result.hargaPlat +
+        result.hargaPisau +
+        result.hargaPond +
+        result.hargaPacking +
+        result.hargaLaminasi;
+      result.hargaPerPcs = Math.round((result.totalBayar / qtyBox) * 100) / 100;
     }
 
     return res.json({
@@ -192,7 +298,7 @@ export const calculatePrice = async (req, res) => {
 
 /**
  * POST /api/v1/calculator/full
- * Calculate complete order pricing (used by order creation)
+ * Kalkulasi harga lengkap (digunakan saat submit order)
  */
 export const calculateFullOrderPrice = async (req, res) => {
   try {

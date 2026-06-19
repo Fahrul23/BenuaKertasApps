@@ -2,8 +2,10 @@ import prisma from '../config/prisma.js';
 
 /**
  * ============================================================
- * PRICING ENGINE SERVICE
- * Formula: Total = (hargaMaterial + hargaWarna + hargaLaminasi) × quantity × 85
+ * PRICING ENGINE SERVICE — v3
+ * Formula Produksi Lengkap:
+ *   totalBayar = hargaKertas + hargaCetak + hargaDrag + hargaPlat
+ *              + hargaPisau + hargaPond + hargaPacking + hargaLaminasi
  * ============================================================
  */
 
@@ -13,6 +15,33 @@ const PLANOS = [
   { code: '79x109', width: 79, height: 109, effW: 77, effH: 106.5 },
   { code: '90x120', width: 90, height: 120, effW: 88, effH: 117.5 },
 ];
+
+// Default PricingConfig jika DB belum ada data
+const DEFAULT_PRICING_CONFIG = {
+  pondMultiplier: 85,
+  packingDivisor: 500,
+  packingMultiplier: 15000,
+  laminasiMultiplier: 0.3,
+  pisauPrice: 700000,
+  dragThreshold: 1000,
+};
+
+/**
+ * Ambil PricingConfig (singleton) dari database
+ * @returns {Promise<object>} Config object dengan semua multiplier
+ */
+const getPricingConfig = async () => {
+  try {
+    const config = await prisma.pricingConfig.findFirst();
+    return config || DEFAULT_PRICING_CONFIG;
+  } catch {
+    return DEFAULT_PRICING_CONFIG;
+  }
+};
+
+// ============================================================
+// STEP A: Ukuran Aktual (paperWidth & paperHeight dari box formula)
+// ============================================================
 
 /**
  * Hitung ukuran kertas berdasarkan model box dan dimensi
@@ -36,7 +65,10 @@ export const hitungUkuranKertas = (boxModel, p, l, t, extras = {}) => {
       };
 
     case 'earlock-box-samping': {
-      const lidah = parseFloat(extras.lidah || 2);
+      const lidah = parseFloat(extras.lidah);
+      if (!lidah || lidah <= 0) {
+        throw new Error('Panjang lidah wajib diisi untuk model Earlock Box Samping.');
+      }
       return {
         paperWidth: 2 * parsedT + 2 * parsedL + lidah,
         paperHeight: 2 * parsedT + parsedP,
@@ -63,18 +95,25 @@ export const hitungUkuranKertas = (boxModel, p, l, t, extras = {}) => {
         paperHeight: 2 * parsedT + parsedL,
       };
 
+    case 'clamshell-box':
+      // P-Kertas = T + 2L + 2(T/2 + 1) = 2T + 2L + 2
+      // L-Kertas = P + 2(T/2 + 1)       = T  + P  + 2
+      return {
+        paperWidth:  2 * parsedT + 2 * parsedL + 2,
+        paperHeight: parsedT + parsedP + 2,
+      };
+
     default:
       throw new Error(`Model box "${boxModel}" belum memiliki formula kalkulasi kertas.`);
   }
 };
 
+// ============================================================
+// STEP A.2: Rekomendasi Plano
+// ============================================================
+
 /**
  * Hitung jumlah mata pada sebuah plano
- * @param {number} effW - Effective width plano (cm)
- * @param {number} effH - Effective height plano (cm)
- * @param {number} pw - Paper width (cm)
- * @param {number} ph - Paper height (cm)
- * @returns {{ normal: number, rotasi: number, best: number, orientasi: string }}
  */
 export const hitungMata = (effW, effH, pw, ph) => {
   const normal = Math.floor(effW / pw) * Math.floor(effH / ph);
@@ -89,13 +128,11 @@ export const hitungMata = (effW, effH, pw, ph) => {
 
 /**
  * Rekomendasi plano terbaik berdasarkan ukuran kertas
- * Memilih plano dengan jumlah mata terbanyak
- * @param {number} paperWidth - Lebar kertas (cm)
- * @param {number} paperHeight - Panjang kertas (cm)
- * @returns {object|null} Plano terbaik dengan jumlahMata dan orientasi
+ * @param {number} paperWidth
+ * @param {number} paperHeight
+ * @returns {Promise<object|null>} Plano terbaik dengan jumlahMata dan orientasi
  */
 export const rekomendasiPlano = async (paperWidth, paperHeight) => {
-  // Coba ambil dari database dulu
   let planos;
   try {
     const dbPlanos = await prisma.planoType.findMany({
@@ -125,21 +162,46 @@ export const rekomendasiPlano = async (paperWidth, paperHeight) => {
     .filter((p) => p.jumlahMata > 0)
     .sort((a, b) => b.jumlahMata - a.jumlahMata);
 
-  if (hasil.length === 0) {
-    return null;
-  }
+  if (hasil.length === 0) return null;
+  return hasil[0];
+};
 
-  return hasil[0]; // Plano terbaik = mata terbanyak
+// ============================================================
+// STEP B: Qty Plano & Qty Rim
+// ============================================================
+
+/**
+ * Hitung qty plano = qtyBox ÷ jumlahMata ÷ 500
+ * @param {number} qtyBox
+ * @param {number} jumlahMata
+ * @returns {number}
+ */
+export const hitungQtyPlano = (qtyBox, jumlahMata) => {
+  return qtyBox / jumlahMata / 500;
 };
 
 /**
- * Hitung harga material dari tabel MaterialPrice
- * @param {string} planoCode - Kode plano ("65x100" | "79x109" | "90x120")
- * @param {string} materialCode - Kode material ("duplex" | "ivory")
- * @param {number} thickness - GSM
- * @returns {Promise<number>} Harga per plano
+ * Hitung qty rim = qtyBox ÷ 500
+ * (500 lembar = 1 rim; 1000=2 rim, 1500=3 rim, dst.)
+ * @param {number} qtyBox
+ * @returns {number}
  */
-export const hitungHargaMaterial = async (planoCode, materialCode, thickness) => {
+export const hitungQtyRim = (qtyBox) => {
+  return Math.ceil(qtyBox / 500);
+};
+
+// ============================================================
+// STEP C: Harga Kertas (lookup MaterialPrice)
+// ============================================================
+
+/**
+ * Lookup harga kertas/plano dari tabel MaterialPrice
+ * @param {string} planoCode
+ * @param {string} materialCode
+ * @param {number} thickness - GSM
+ * @returns {Promise<number>}
+ */
+export const hitungHargaKertas = async (planoCode, materialCode, thickness) => {
   const record = await prisma.materialPrice.findFirst({
     where: {
       planoCode,
@@ -150,21 +212,24 @@ export const hitungHargaMaterial = async (planoCode, materialCode, thickness) =>
   });
 
   if (!record) {
-    throw new Error(`Harga material tidak ditemukan: ${planoCode} × ${materialCode} × ${thickness}gsm`);
+    throw new Error(`Harga kertas tidak ditemukan: ${planoCode} × ${materialCode} × ${thickness}gsm`);
   }
 
   return record.price;
 };
 
+// ============================================================
+// STEP D: Harga Cetak, Drag, Plat (lookup CmykBlokPrice by gramatur range)
+// ============================================================
+
 /**
- * Hitung harga warna berdasarkan GSM dan sisi cetak
+ * Lookup CmykBlokPrice berdasarkan range gramatur
  * @param {number} thickness - GSM
- * @param {string} colorSides - "1-sisi" | "2-sisi"
- * @returns {Promise<number>} Harga warna total
+ * @returns {Promise<object>}
  */
-export const hitungHargaWarna = async (thickness, colorSides) => {
+const getCmykBlokPrice = async (thickness) => {
   const parsedThickness = parseInt(thickness);
-  const record = await prisma.colorPrice.findFirst({
+  const record = await prisma.cmykBlokPrice.findFirst({
     where: {
       thicknessMin: { lte: parsedThickness },
       thicknessMax: { gte: parsedThickness },
@@ -173,48 +238,135 @@ export const hitungHargaWarna = async (thickness, colorSides) => {
   });
 
   if (!record) {
-    throw new Error(`Harga warna tidak ditemukan untuk ${parsedThickness}gsm`);
+    throw new Error(`Harga CMYK Blok tidak ditemukan untuk gramatur ${parsedThickness}gsm`);
   }
 
-  const multiplier = colorSides === '2-sisi' ? 2 : 1;
-  return record.pricePerSide * multiplier;
+  return record;
 };
 
 /**
- * Hitung harga laminasi dari dimensi plano
- * Formula: plano.width × plano.height × 0.3
- * @param {number} planoWidth - Lebar plano (cm)
- * @param {number} planoHeight - Panjang plano (cm)
- * @param {string} laminationSide - Sisi laminasi (jika "tanpa-laminasi", return 0)
- * @returns {number} Harga laminasi
+ * Harga cetak berdasarkan gramatur
+ * @param {number} thickness
+ * @returns {Promise<number>}
  */
-export const hitungHargaLaminasi = (planoWidth, planoHeight, laminationSide = '') => {
-  if (laminationSide === 'tanpa-laminasi') {
-    return 0;
-  }
-  return planoWidth * planoHeight * 0.3;
+export const hitungHargaCetak = async (thickness) => {
+  const cmyk = await getCmykBlokPrice(thickness);
+  return cmyk.cetakPrice;
 };
 
 /**
- * Hitung total harga final
- * Formula: (hargaMaterial + hargaWarna + hargaLaminasi) × quantity × markup
- * @param {number} hargaMaterial
- * @param {number} hargaWarna
- * @param {number} hargaLaminasi
- * @param {number} quantity
- * @param {number} markup - Default 85
- * @returns {{ subtotalPerUnit: number, totalPrice: number }}
+ * Harga drag = max(0, qtyBox - dragThreshold) × dragPrice
+ * @param {number} qtyBox
+ * @param {number} thickness
+ * @returns {Promise<number>}
  */
-export const hitungTotalHarga = (hargaMaterial, hargaWarna, hargaLaminasi, quantity, markup = 85) => {
-  const subtotalPerUnit = hargaMaterial + hargaWarna + hargaLaminasi;
-  const totalPrice = subtotalPerUnit * quantity * markup;
-  return { subtotalPerUnit, totalPrice };
+export const hitungHargaDrag = async (qtyBox, thickness) => {
+  const [cmyk, config] = await Promise.all([
+    getCmykBlokPrice(thickness),
+    getPricingConfig(),
+  ]);
+  const excessQty = Math.max(0, qtyBox - config.dragThreshold);
+  return excessQty * cmyk.dragPrice;
 };
 
 /**
- * Full pricing calculation — menggabungkan semua langkah
- * @param {object} orderData - Data pesanan lengkap
- * @returns {Promise<object>} Full price breakdown
+ * Harga plat (flat) dari CmykBlokPrice
+ * @param {number} thickness
+ * @returns {Promise<number>}
+ */
+export const hitungHargaPlat = async (thickness) => {
+  const cmyk = await getCmykBlokPrice(thickness);
+  return cmyk.platPrice;
+};
+
+// ============================================================
+// STEP E: Harga Pisau (flat dari PricingConfig)
+// ============================================================
+
+/**
+ * Harga pisau (flat, sama untuk semua order)
+ * @returns {Promise<number>}
+ */
+export const hitungHargaPisau = async () => {
+  const config = await getPricingConfig();
+  return config.pisauPrice;
+};
+
+// ============================================================
+// STEP F: Harga Pond
+// ============================================================
+
+/**
+ * Harga pond = qtyBox × pondMultiplier (default 85)
+ * @param {number} qtyBox
+ * @returns {Promise<number>}
+ */
+export const hitungHargaPond = async (qtyBox) => {
+  const config = await getPricingConfig();
+  return qtyBox * config.pondMultiplier;
+};
+
+// ============================================================
+// STEP G: Harga Packing
+// ============================================================
+
+/**
+ * Harga packing = (qtyBox ÷ packingDivisor) × packingMultiplier
+ * Default: (qtyBox ÷ 500) × 15000
+ * @param {number} qtyBox
+ * @returns {Promise<number>}
+ */
+export const hitungHargaPacking = async (qtyBox) => {
+  const config = await getPricingConfig();
+  return (qtyBox / config.packingDivisor) * config.packingMultiplier;
+};
+
+// ============================================================
+// STEP H: Harga Laminasi
+// ============================================================
+
+/**
+ * Harga laminasi = paperWidth × paperHeight × laminasiMultiplier × qtyBox
+ * Default multiplier: 0.3
+ * Jika laminationSide = "tanpa-laminasi", return 0
+ * @param {number} paperWidth  - ukuran aktual (cm)
+ * @param {number} paperHeight - ukuran aktual (cm)
+ * @param {number} qtyBox
+ * @param {string} laminationSide
+ * @returns {Promise<number>}
+ */
+export const hitungHargaLaminasi = async (paperWidth, paperHeight, qtyBox, laminationSide = '') => {
+  if (laminationSide === 'tanpa-laminasi') return 0;
+  const config = await getPricingConfig();
+  return paperWidth * paperHeight * config.laminasiMultiplier * qtyBox;
+};
+
+// ============================================================
+// STEP I: Total Bayar & Harga per Pcs
+// ============================================================
+
+/**
+ * Jumlahkan semua komponen harga
+ */
+const hitungTotalBayar = (components) => {
+  return Object.values(components).reduce((sum, v) => sum + v, 0);
+};
+
+/**
+ * Harga per pcs = totalBayar ÷ qtyBox
+ */
+const hitungHargaPerPcs = (totalBayar, qtyBox) => {
+  return totalBayar / qtyBox;
+};
+
+// ============================================================
+// MAIN: Orkestrasi kalkulasi lengkap (Pricing Engine v3)
+// ============================================================
+
+/**
+ * Kalkulasi harga penuh — memanggil semua step A–I
+ * @param {object} orderData - Data order dari request
+ * @returns {Promise<object>} Full pricing breakdown
  */
 export const calculateFullPrice = async (orderData) => {
   const {
@@ -225,12 +377,13 @@ export const calculateFullPrice = async (orderData) => {
     sizeTinggiTutup,
     material,
     materialThickness,
-    colorOption,
     laminationSide,
     quantity,
   } = orderData;
 
-  // Step 1: Hitung ukuran kertas
+  const qtyBox = parseInt(quantity);
+
+  // STEP A: Ukuran kertas
   const extras = {};
   if (sizeTinggiTutup) extras.tTutup = sizeTinggiTutup;
   if (orderData.lidah) extras.lidah = orderData.lidah;
@@ -243,56 +396,76 @@ export const calculateFullPrice = async (orderData) => {
     extras
   );
 
-  // Step 2: Rekomendasi plano
+  // STEP A.2: Rekomendasi plano
   const plano = await rekomendasiPlano(paperWidth, paperHeight);
   if (!plano) {
     throw new Error('Tidak ada plano yang cocok untuk ukuran kertas ini. Ukuran box mungkin terlalu besar.');
   }
 
-  // Step 3: Harga material
-  const hargaMaterial = await hitungHargaMaterial(plano.code, material, materialThickness);
+  // STEP B: Qty Plano & Rim
+  const qtyPlano = hitungQtyPlano(qtyBox, plano.jumlahMata);
+  const qtyRim = hitungQtyRim(qtyBox);
 
-  // Step 4: Harga warna
-  const colorSides = orderData.colorSides || colorOption;
-  const hargaWarna = await hitungHargaWarna(materialThickness, colorSides);
-
-  // Step 5: Harga laminasi
-  const hargaLaminasi = hitungHargaLaminasi(plano.width, plano.height, laminationSide);
-
-  // Step 6: Total
-  const parsedQuantity = parseInt(quantity);
-  const markup = 85;
-  const { subtotalPerUnit, totalPrice } = hitungTotalHarga(
-    hargaMaterial,
-    hargaWarna,
+  // STEP C-H: Semua komponen harga (paralel untuk performa)
+  const [
+    hargaKertas,
+    hargaCetak,
+    hargaDrag,
+    hargaPlat,
+    hargaPisau,
+    hargaPond,
+    hargaPacking,
     hargaLaminasi,
-    parsedQuantity,
-    markup
-  );
+  ] = await Promise.all([
+    hitungHargaKertas(plano.code, material, materialThickness),
+    hitungHargaCetak(materialThickness),
+    hitungHargaDrag(qtyBox, materialThickness),
+    hitungHargaPlat(materialThickness),
+    hitungHargaPisau(),
+    hitungHargaPond(qtyBox),
+    hitungHargaPacking(qtyBox),
+    hitungHargaLaminasi(paperWidth, paperHeight, qtyBox, laminationSide),
+  ]);
+
+  // STEP I: Total
+  const totalBayar = hitungTotalBayar({
+    hargaKertas,
+    hargaCetak,
+    hargaDrag,
+    hargaPlat,
+    hargaPisau,
+    hargaPond,
+    hargaPacking,
+    hargaLaminasi,
+  });
+  const hargaPerPcs = hitungHargaPerPcs(totalBayar, qtyBox);
 
   return {
-    // Ukuran kertas
-    paperWidth,
-    paperHeight,
-
-    // Plano terpilih
+    // Plano info
     planoType: plano.code,
-    planoWidth: plano.width,
-    planoHeight: plano.height,
+    paperWidth: Math.round(paperWidth * 100) / 100,
+    paperHeight: Math.round(paperHeight * 100) / 100,
     jumlahMata: plano.jumlahMata,
     planoOrientation: plano.orientasi,
+    qtyPlano: Math.round(qtyPlano * 1000) / 1000,
+    qtyRim,
 
     // Breakdown harga
-    hargaMaterial,
-    hargaWarna,
+    hargaKertas,
+    hargaCetak,
+    hargaDrag,
+    hargaPlat,
+    hargaPisau,
+    hargaPond,
+    hargaPacking,
     hargaLaminasi,
-    subtotalPerUnit,
-    markup,
-    totalPrice,
+    totalBayar,
+    hargaPerPcs: Math.round(hargaPerPcs * 100) / 100,
 
     // Legacy compatibility
-    subtotal: totalPrice,
+    totalPrice: totalBayar,
+    subtotal: totalBayar,
     tax: 0,
-    totalAmount: totalPrice,
+    totalAmount: totalBayar,
   };
 };

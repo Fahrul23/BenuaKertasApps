@@ -1,9 +1,18 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Box, Package, ArrowRight, TrendingUp, Activity, Layers, DollarSign, CreditCard } from 'lucide-react';
+import { Box, Package, ArrowRight, TrendingUp, Activity, Layers, DollarSign, CreditCard, Settings, AlignJustify, ShoppingCart } from 'lucide-react';
 
 const AdminPage = () => {
   const menuCards = [
+    {
+      id: 'orders',
+      label: 'Order Management',
+      desc: 'Kelola pesanan pelanggan, verifikasi pembayaran DP dan pelunasan.',
+      to: '/admin/orders',
+      icon: ShoppingCart,
+      gradient: 'from-blue-600 to-indigo-600',
+      shadow: 'shadow-blue-600/25',
+    },
     {
       id: 'box-models',
       label: 'Box Model Management',
@@ -32,13 +41,22 @@ const AdminPage = () => {
       shadow: 'shadow-blue-700/25',
     },
     {
-      id: 'pricing-rules',
-      label: 'Pricing Rules (Legacy)',
-      desc: '⚠️ Sistem lama — Harga sekarang dihitung otomatis via formula plano',
-      to: '/admin/pricing-rules',
+      id: 'plano-types',
+      label: 'Ukuran Plano',
+      desc: 'Kelola ukuran dan dimensi kertas plano serta area efektif potong',
+      to: '/admin/plano-types',
+      icon: Layers,
+      gradient: 'from-orange-600 to-amber-500',
+      shadow: 'shadow-orange-600/25',
+    },
+    {
+      id: 'material-prices',
+      label: 'Harga Kertas Plano',
+      desc: 'Kelola harga bahan kertas per plano berdasarkan gramatur',
+      to: '/admin/material-prices',
       icon: DollarSign,
-      gradient: 'from-gray-500 to-gray-400',
-      shadow: 'shadow-gray-500/25',
+      gradient: 'from-emerald-600 to-teal-500',
+      shadow: 'shadow-emerald-600/25',
     },
     {
       id: 'bank-accounts',
@@ -48,6 +66,24 @@ const AdminPage = () => {
       icon: CreditCard,
       gradient: 'from-slate-700 to-slate-500',
       shadow: 'shadow-slate-700/25',
+    },
+    {
+      id: 'cmyk-blok-prices',
+      label: 'Harga CMYK & Blok',
+      desc: 'Kelola tarif pencetakan berdasarkan ketebalan kertas',
+      to: '/admin/cmyk-blok-prices',
+      icon: AlignJustify,
+      gradient: 'from-purple-700 to-purple-500',
+      shadow: 'shadow-purple-700/25',
+    },
+    {
+      id: 'pricing-config',
+      label: 'Konfigurasi Harga',
+      desc: 'Atur multiplier pond, harga pisau, multiplier laminasi, dll.',
+      to: '/admin/pricing-config',
+      icon: Settings,
+      gradient: 'from-pink-700 to-pink-500',
+      shadow: 'shadow-pink-700/25',
     },
   ];
 

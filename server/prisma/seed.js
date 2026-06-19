@@ -57,41 +57,49 @@ async function main() {
       code: 'earlock-box-depan',
       name: 'Earlock Box Depan',
       description: 'Box dengan lock di bagian depan untuk kemudahan akses',
-      imageUrl: '/assets/earlock-box-depan.svg',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781668071/benua-kertas/box-models/rksk0svezhq6znyzeeyj.png',
       isActive: true,
-      basePrice: 5000,
+      basePrice: null,
     },
     {
       code: 'earlock-box-samping',
       name: 'Earlock Box Samping',
       description: 'Box dengan lock di bagian samping untuk tampilan yang unik',
-      imageUrl: '/assets/earlock-box-samping.svg',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781668212/benua-kertas/box-models/z1b5ttocj6kqelso162q.png',
       isActive: true,
-      basePrice: 5200,
+      basePrice: null,
     },
     {
       code: 'top-bottom-box',
       name: 'Top Bottom Box',
       description: 'Box dengan tutup terpisah, cocok untuk produk premium',
-      imageUrl: '/assets/top-bottom-box.svg',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781668248/benua-kertas/box-models/g0zxgkhcz17pzxxvqqa4.png',
       isActive: true,
-      basePrice: 6000,
+      basePrice: null,
     },
     {
       code: 'lunch-box',
       name: 'Lunch Box',
       description: 'Box khusus untuk kemasan makanan',
-      imageUrl: '/assets/lunch-box.svg',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781668312/benua-kertas/box-models/euqdhukebfqtoncgbpjg.png',
       isActive: true,
-      basePrice: 4800,
+      basePrice: null,
     },
     {
       code: 'tray-box',
       name: 'Tray Box',
       description: 'Box berbentuk tray untuk display produk',
-      imageUrl: '/assets/tray-box.svg',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781668285/benua-kertas/box-models/s4dpw3l5sb8jmcatnz8k.png',
       isActive: true,
-      basePrice: 4200,
+      basePrice: null,
+    },
+    {
+      code: 'clamshell-box',
+      name: 'Clamshell Box',
+      description: 'Box berbentuk clamshell untuk display produk',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781668388/benua-kertas/box-models/qxndb1cyrx5heq1yji0y.png',
+      isActive: true,
+      basePrice: null,
     },
   ];
 
@@ -104,7 +112,11 @@ async function main() {
       await prisma.boxModel.create({ data: boxModel });
       console.log(`✅ Box model created: ${boxModel.name}`);
     } else {
-      console.log(`⚠️  Box model already exists: ${boxModel.name}`);
+      await prisma.boxModel.update({
+        where: { code: boxModel.code },
+        data: boxModel,
+      });
+      console.log(`🔄 Box model updated: ${boxModel.name}`);
     }
   }
   console.log('');
@@ -119,14 +131,14 @@ async function main() {
       code: 'duplex',
       name: 'Duplex',
       description: 'Kertas duplex berkualitas tinggi dengan permukaan halus',
-      imageUrl: '/assets/duplex.svg',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781670046/benua-kertas/box-models/nhajdqc2knrutk2gumyn.png',
       isActive: true,
     },
     {
       code: 'ivory',
       name: 'Ivory',
       description: 'Kertas ivory premium dengan warna putih bersih',
-      imageUrl: '/assets/ivory.svg',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781670065/benua-kertas/box-models/jfgct7mtffharzmshek3.png',
       isActive: true,
     },
   ];
@@ -140,7 +152,11 @@ async function main() {
       await prisma.material.create({ data: material });
       console.log(`✅ Material created: ${material.name}`);
     } else {
-      console.log(`⚠️  Material already exists: ${material.name}`);
+      await prisma.material.update({
+        where: { code: material.code },
+        data: material,
+      });
+      console.log(`🔄 Material updated: ${material.name}`);
     }
   }
   console.log('');
@@ -329,6 +345,61 @@ async function main() {
       });
       console.log(`🔄 Color price updated: ${cp.thicknessMin}-${cp.thicknessMax}gsm`);
     }
+  }
+  console.log('');
+
+  // ==========================================
+  // 8. Seed CmykBlokPrice (NEW — Pricing Engine v3)
+  // ==========================================
+  console.log('🖨️  Seeding CMYK blok prices...');
+
+  const cmykBlokPrices = [
+    { thicknessMin: 210, thicknessMax: 330, cetakPrice: 460000, dragPrice: 120, platPrice: 170000 },
+    { thicknessMin: 350, thicknessMax: 350, cetakPrice: 550000, dragPrice: 140, platPrice: 170000 },
+    { thicknessMin: 400, thicknessMax: 400, cetakPrice: 600000, dragPrice: 160, platPrice: 170000 },
+  ];
+
+  for (const cbp of cmykBlokPrices) {
+    const existing = await prisma.cmykBlokPrice.findFirst({
+      where: {
+        thicknessMin: cbp.thicknessMin,
+        thicknessMax: cbp.thicknessMax,
+      },
+    });
+
+    if (!existing) {
+      await prisma.cmykBlokPrice.create({ data: cbp });
+      console.log(`✅ CMYK blok price created: ${cbp.thicknessMin}-${cbp.thicknessMax}gsm`);
+    } else {
+      await prisma.cmykBlokPrice.update({
+        where: { id: existing.id },
+        data: { cetakPrice: cbp.cetakPrice, dragPrice: cbp.dragPrice, platPrice: cbp.platPrice },
+      });
+      console.log(`🔄 CMYK blok price updated: ${cbp.thicknessMin}-${cbp.thicknessMax}gsm`);
+    }
+  }
+  console.log('');
+
+  // ==========================================
+  // 9. Seed PricingConfig (NEW — Pricing Engine v3, singleton)
+  // ==========================================
+  console.log('⚙️  Seeding pricing config...');
+
+  const existingConfig = await prisma.pricingConfig.findFirst();
+  if (!existingConfig) {
+    await prisma.pricingConfig.create({
+      data: {
+        pondMultiplier: 85,
+        packingDivisor: 500,
+        packingMultiplier: 15000,
+        laminasiMultiplier: 0.3,
+        pisauPrice: 700000,
+        dragThreshold: 1000,
+      },
+    });
+    console.log('✅ Pricing config created (singleton)');
+  } else {
+    console.log('⚠️  Pricing config already exists.');
   }
   console.log('');
 

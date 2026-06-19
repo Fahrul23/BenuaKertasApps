@@ -13,49 +13,49 @@ async function main() {
       code: 'earlock-box-depan',
       name: 'Earlock Box Depan',
       description: 'Box dengan lock di bagian depan untuk kemudahan akses',
-      imageUrl: '/assets/earlock-box-depan.svg',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781668071/benua-kertas/box-models/rksk0svezhq6znyzeeyj.png',
       isActive: true,
-      basePrice: 5000,
+      basePrice: null,
     },
     {
       code: 'earlock-box-samping',
       name: 'Earlock Box Samping',
       description: 'Box dengan lock di bagian samping untuk tampilan yang unik',
-      imageUrl: '/assets/earlock-box-samping.svg',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781668212/benua-kertas/box-models/z1b5ttocj6kqelso162q.png',
       isActive: true,
-      basePrice: 5200,
+      basePrice: null,
     },
     {
       code: 'top-bottom-box',
       name: 'Top Bottom Box',
       description: 'Box dengan tutup terpisah, cocok untuk produk premium',
-      imageUrl: '/assets/top-bottom-box.svg',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781668248/benua-kertas/box-models/g0zxgkhcz17pzxxvqqa4.png',
       isActive: true,
-      basePrice: 6000,
+      basePrice: null,
     },
     {
       code: 'lunch-box',
       name: 'Lunch Box',
       description: 'Box khusus untuk kemasan makanan',
-      imageUrl: '/assets/lunch-box.svg',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781668312/benua-kertas/box-models/euqdhukebfqtoncgbpjg.png',
       isActive: true,
-      basePrice: 4800,
-    },
-    {
-      code: 'clamshell-box',
-      name: 'Clamshell Box',
-      description: 'Box dengan engsel untuk kemudahan buka tutup',
-      imageUrl: '/assets/clamshell-box.svg',
-      isActive: true,
-      basePrice: 5300,
+      basePrice: null,
     },
     {
       code: 'tray-box',
       name: 'Tray Box',
       description: 'Box berbentuk tray untuk display produk',
-      imageUrl: '/assets/tray-box.svg',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781668285/benua-kertas/box-models/s4dpw3l5sb8jmcatnz8k.png',
       isActive: true,
-      basePrice: 4200,
+      basePrice: null,
+    },
+    {
+      code: 'clamshell-box',
+      name: 'Clamshell Box',
+      description: 'Box berbentuk clamshell untuk display produk',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781668388/benua-kertas/box-models/qxndb1cyrx5heq1yji0y.png',
+      isActive: true,
+      basePrice: null,
     },
   ];
 
@@ -68,7 +68,11 @@ async function main() {
       await prisma.boxModel.create({ data: boxModel });
       console.log(`✅ Box model created: ${boxModel.name}`);
     } else {
-      console.log(`⚠️  Box model already exists: ${boxModel.name}`);
+      await prisma.boxModel.update({
+        where: { code: boxModel.code },
+        data: boxModel,
+      });
+      console.log(`🔄 Box model updated: ${boxModel.name}`);
     }
   }
   console.log('');
@@ -83,34 +87,15 @@ async function main() {
       code: 'duplex',
       name: 'Duplex',
       description: 'Kertas duplex berkualitas tinggi dengan permukaan halus',
-      imageUrl: '/assets/duplex.svg',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781670046/benua-kertas/box-models/nhajdqc2knrutk2gumyn.png',
       isActive: true,
-      price300gsm: 450,
-      price350gsm: 520,
-      price400gsm: 600,
-      price450gsm: 680,
     },
     {
       code: 'ivory',
       name: 'Ivory',
       description: 'Kertas ivory premium dengan warna putih bersih',
-      imageUrl: '/assets/ivory.svg',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781670065/benua-kertas/box-models/jfgct7mtffharzmshek3.png',
       isActive: true,
-      price300gsm: 550,
-      price350gsm: 630,
-      price400gsm: 720,
-      price450gsm: 810,
-    },
-    {
-      code: 'kraft',
-      name: 'Kraft',
-      description: 'Kertas kraft natural dengan tampilan eco-friendly',
-      imageUrl: '/assets/kraft.svg',
-      isActive: true,
-      price300gsm: 380,
-      price350gsm: 440,
-      price400gsm: 510,
-      price450gsm: 580,
     },
   ];
 
@@ -123,7 +108,11 @@ async function main() {
       await prisma.material.create({ data: material });
       console.log(`✅ Material created: ${material.name}`);
     } else {
-      console.log(`⚠️  Material already exists: ${material.name}`);
+      await prisma.material.update({
+        where: { code: material.code },
+        data: material,
+      });
+      console.log(`🔄 Material updated: ${material.name}`);
     }
   }
   console.log('');
@@ -135,52 +124,52 @@ async function main() {
   
   const finishingOptions = [
     {
-      code: 'glossy',
-      name: 'Glossy',
-      description: 'Laminasi glossy mengkilap untuk tampilan premium',
-      imageUrl: '/assets/glossy.svg',
-      isActive: true,
-      additionalPrice: 800,
-    },
-    {
-      code: 'doff',
-      name: 'Doff',
-      description: 'Laminasi doff matte untuk tampilan elegan',
-      imageUrl: '/assets/doff.svg',
-      isActive: true,
-      additionalPrice: 850,
-    },
-    {
       code: 'sisi-luar',
       name: 'Sisi Luar',
       description: 'Laminasi pada sisi luar saja',
-      imageUrl: '/assets/sisi-luar.svg',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781672437/benua-kertas/box-models/pn6tizwnstisegmmg28h.png',
+      category: 'side',
       isActive: true,
-      additionalPrice: 600,
     },
     {
       code: 'dalam',
       name: 'Dalam',
       description: 'Laminasi pada bagian dalam',
-      imageUrl: '/assets/dalam.svg',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781672571/benua-kertas/box-models/rmcbechhpgspemacprpa.png',
+      category: 'side',
       isActive: true,
-      additionalPrice: 600,
     },
     {
-      code: 'luar-dalam',
+      code: 'luar-dan-dalam',
       name: 'Luar & Dalam',
       description: 'Laminasi pada kedua sisi',
-      imageUrl: '/assets/luar-dalam.svg',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781672621/benua-kertas/box-models/ez41tttcixvqliwljorr.png',
+      category: 'side',
       isActive: true,
-      additionalPrice: 1200,
     },
     {
       code: 'tanpa-laminasi',
       name: 'Tanpa Laminasi',
       description: 'Tanpa laminasi, hanya cetak biasa',
-      imageUrl: '/assets/tanpa-laminasi.svg',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781672670/benua-kertas/box-models/iwihhkmz0pcjfdhsf703.png',
+      category: 'side',
       isActive: true,
-      additionalPrice: 0,
+    },
+    {
+      code: 'glossy',
+      name: 'Glossy',
+      description: 'Laminasi glossy mengkilap untuk tampilan premium',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781672718/benua-kertas/box-models/xue5yfhstnugqetsdjmf.png',
+      category: 'type',
+      isActive: true,
+    },
+    {
+      code: 'doff',
+      name: 'Doff',
+      description: 'Laminasi doff matte untuk tampilan elegan',
+      imageUrl: 'https://res.cloudinary.com/datbu1rsi/image/upload/v1781672766/benua-kertas/box-models/h3dbbqao2bas5fb0kj6l.png',
+      category: 'type',
+      isActive: true,
     },
   ];
 

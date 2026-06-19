@@ -6,10 +6,7 @@ import MaterialModal from './components/MaterialModal';
 import DeleteConfirmModal from './components/DeleteConfirmModal';
 import MaterialDetailModal from './components/DetailModal';
 
-const formatPrice = (val) => {
-  if (val == null) return '-';
-  return `Rp ${parseFloat(val).toLocaleString('id-ID')}`;
-};
+
 
 const MaterialManagementPage = () => {
   const [materials, setMaterials] = useState([]);
@@ -199,7 +196,7 @@ const MaterialManagementPage = () => {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  {['ID', 'Gambar', 'Kode', 'Nama', 'Harga 300gsm', 'Harga 350gsm', 'Harga 400gsm', 'Harga 450gsm', 'Status', 'Aksi'].map((h) => (
+                  {['ID', 'Gambar', 'Kode', 'Nama', 'Status', 'Aksi'].map((h) => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                       {h}
                     </th>
@@ -226,10 +223,7 @@ const MaterialManagementPage = () => {
                     </td>
                     <td className="px-4 py-3 text-sm font-mono font-semibold text-gray-900 whitespace-nowrap">{m.code}</td>
                     <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">{m.name}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{formatPrice(m.price300gsm)}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{formatPrice(m.price350gsm)}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{formatPrice(m.price400gsm)}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{formatPrice(m.price450gsm)}</td>
+
                     <td className="px-4 py-3">
                       <span
                         className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -301,6 +295,7 @@ const MaterialManagementPage = () => {
           material={selectedMaterial}
           onClose={() => setIsModalOpen(false)}
           onSave={handleSave}
+          onError={(message) => setErrorModal({ isOpen: true, title: 'Error Upload', message })}
         />
       )}
       {isDeleteModalOpen && (

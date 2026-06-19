@@ -210,7 +210,7 @@ const FinishingOptionManagementPage = () => {
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    {['ID', 'Kode', 'Nama', 'Kategori', 'Harga Tambahan', 'Status', 'Aksi'].map((h) => (
+                    {['ID', 'Gambar', 'Kode', 'Nama', 'Kategori', 'Status', 'Aksi'].map((h) => (
                       <th key={h} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         {h}
                       </th>
@@ -221,6 +221,22 @@ const FinishingOptionManagementPage = () => {
                   {filtered.map((opt) => (
                     <tr key={opt.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 text-sm text-gray-500">{opt.id}</td>
+                      <td className="px-6 py-4">
+                        {opt.imageUrl ? (
+                          <div className="w-12 h-12 rounded-lg border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
+                            <img
+                              src={opt.imageUrl}
+                              alt={opt.name}
+                              className="w-full h-full object-contain p-1"
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-12 h-12 rounded-lg border border-gray-200 bg-gray-100 flex items-center justify-center">
+                            <span className="text-[10px] text-gray-400">No img</span>
+                          </div>
+                        )}
+                      </td>
                       <td className="px-6 py-4 text-sm font-mono font-medium text-gray-900">{opt.code}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{opt.name}</td>
                       <td className="px-6 py-4">
@@ -229,11 +245,7 @@ const FinishingOptionManagementPage = () => {
                           {CATEGORY_LABELS[opt.category] || opt.category}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {opt.additionalPrice != null
-                          ? `+ Rp ${parseFloat(opt.additionalPrice).toLocaleString('id-ID')}`
-                          : <span className="text-gray-400">—</span>}
-                      </td>
+
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 inline-flex text-xs font-semibold rounded-full ${opt.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                           {opt.isActive ? 'Aktif' : 'Nonaktif'}

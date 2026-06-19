@@ -279,7 +279,6 @@ export const getActiveFinishingOptions = async () => {
       description: true,
       imageUrl: true,
       category: true,
-      additionalPrice: true,
     },
   });
 };
@@ -383,267 +382,7 @@ export const toggleFinishingOptionStatus = async (id) => {
   });
 };
 
-// ==========================================
-// PRICING RULES — 7-field matrix (NO FK)
-// ==========================================
 
-/**
- * Validasi manual input PricingRule ke master data
- * Karena tidak ada FK constraint, validasi dilakukan di aplikasi
- */
-export const validatePricingRuleInput = async (input) => {
-  // Standarisasi nilai laminationPart agar kompatibel dengan data seed (luar -> sisi-luar, luar-dalam -> luar-dan-dalam)
-  if (input.laminationPart) {
-    const lower = input.laminationPart.toLowerCase().trim();
-    if (lower === 'luar') input.laminationPart = 'sisi-luar';
-    else if (lower === 'luar-dalam') input.laminationPart = 'luar-dan-dalam';
-  }
-
-  const [boxModel, material, finishing, qty] = await Promise.all([
-    prisma.boxModel.findUnique({ where: { code: input.boxModelCode } }),
-    prisma.material.findUnique({ where: { code: input.materialCode } }),
-    prisma.finishingOption.findFirst({ where: { code: input.laminationPart } }),
-    // quantityTier adalah integer bebas (tidak ada tabel QuantityTier), skip validasi ke tabel lain
-  ]);
-
-  if (!boxModel)  throw new Error(`BoxModel tidak ditemukan: ${input.boxModelCode}`);
-  if (!material)  throw new Error(`Material tidak ditemukan: ${input.materialCode}`);
-  if (!finishing && input.laminationPart !== 'tanpa-laminasi') {
-    throw new Error(`FinishingOption tidak ditemukan: ${input.laminationPart}`);
-  }
-  if (!input.quantityTier || input.quantityTier <= 0) {
-    throw new Error('quantityTier harus berupa angka positif');
-  }
-  if (!input.thickness || ![300, 350, 400, 450].includes(parseInt(input.thickness))) {
-    throw new Error('thickness harus salah satu dari: 300, 350, 400, 450');
-  }
-  if (!['1-sisi', '2-sisi'].includes(input.colorSides)) {
-    throw new Error('colorSides harus "1-sisi" atau "2-sisi"');
-  }
-
-  // Validasi laminationType
-  if (input.laminationPart !== 'tanpa-laminasi' && !input.laminationType) {
-    throw new Error('laminationType wajib diisi jika laminationPart bukan tanpa-laminasi');
-  }
-  if (input.laminationPart === 'tanpa-laminasi' && input.laminationType) {
-    throw new Error('laminationType harus null jika laminationPart adalah tanpa-laminasi');
-  }
-};
-
-/**
- * Upsert PricingRule (insert atau update berdasarkan kombinasi 7 field)
- */
-export const upsertPricingRule = async (input) => {
-  await validatePricingRuleInput(input);
-
-  const laminationType = input.laminationPart === 'tanpa-laminasi' ? null : (input.laminationType ?? null);
-  const thickness = parseInt(input.thickness);
-  const quantityTier = parseInt(input.quantityTier);
-
-  try {
-    return await prisma.pricingRule.upsert({
-      where: {
-        boxModelCode_materialCode_thickness_colorSides_laminationPart_laminationType_quantityTier: {
-          boxModelCode:   input.boxModelCode,
-          materialCode:   input.materialCode,
-          thickness,
-          colorSides:     input.colorSides,
-          laminationPart: input.laminationPart,
-          laminationType,
-          quantityTier,
-        },
-      },
-      update: {
-        pricePerUnit: parseFloat(input.pricePerUnit),
-        shippingCost: input.shippingCost != null ? parseFloat(input.shippingCost) : null,
-        isActive: input.isActive !== undefined ? input.isActive : true,
-      },
-      create: {
-        boxModelCode:   input.boxModelCode,
-        materialCode:   input.materialCode,
-        thickness,
-        colorSides:     input.colorSides,
-        laminationPart: input.laminationPart,
-        laminationType,
-        quantityTier,
-        pricePerUnit:   parseFloat(input.pricePerUnit),
-        shippingCost:   input.shippingCost != null ? parseFloat(input.shippingCost) : null,
-        isActive:       input.isActive !== undefined ? input.isActive : true,
-      },
-    });
-  } catch (e) {
-    if (e.code === 'P2002') {
-      throw new Error('Kombinasi harga ini sudah ada. Gunakan update.');
-    }
-    throw e;
-  }
-};
-
-/**
- * Lookup harga dari PricingRule berdasarkan 7 field kombinasi
- * Digunakan saat user submit order
- */
-export const lookupPrice = async (order) => {
-  const quantityTier = parseInt(order.quantityTier);
-
-  if (!quantityTier || quantityTier <= 0) {
-    return { found: false, reason: 'custom_quantity' };
-  }
-
-  // Standarisasi nilai laminationPart agar kompatibel dengan data seed
-  if (order.laminationPart) {
-    const lower = order.laminationPart.toLowerCase().trim();
-    if (lower === 'luar') order.laminationPart = 'sisi-luar';
-    else if (lower === 'luar-dalam') order.laminationPart = 'luar-dan-dalam';
-  }
-
-  const laminationType = order.laminationPart === 'tanpa-laminasi'
-    ? null
-    : (order.laminationType ?? null);
-
-  const rule = await prisma.pricingRule.findFirst({
-    where: {
-      boxModelCode:   order.boxModelCode || order.boxModel,
-      materialCode:   order.materialCode || order.material,
-      thickness:      parseInt(order.thickness),
-      colorSides:     order.colorSides,
-      laminationPart: order.laminationPart,
-      laminationType,
-      quantityTier,
-      isActive:       true,
-    },
-  });
-
-  if (!rule) {
-    return { found: false, reason: 'price_not_set' };
-  }
-
-  const totalPrice = parseFloat(rule.pricePerUnit) * quantityTier;
-
-  return {
-    found:        true,
-    pricePerUnit: parseFloat(rule.pricePerUnit),
-    shippingCost: rule.shippingCost ? parseFloat(rule.shippingCost) : null,
-    totalPrice,
-    ruleId:       rule.id,
-  };
-};
-
-/**
- * Get all active pricing rules
- */
-export const getActivePricingRules = async () => {
-  return await prisma.pricingRule.findMany({
-    where: { isActive: true },
-    orderBy: [
-      { boxModelCode: 'asc' },
-      { materialCode: 'asc' },
-      { thickness: 'asc' },
-      { quantityTier: 'asc' },
-    ],
-    select: {
-      id: true,
-      boxModelCode: true,
-      materialCode: true,
-      thickness: true,
-      colorSides: true,
-      laminationPart: true,
-      laminationType: true,
-      quantityTier: true,
-      pricePerUnit: true,
-      shippingCost: true,
-    },
-  });
-};
-
-/**
- * Get all pricing rules (including inactive) - for admin
- */
-export const getAllPricingRules = async () => {
-  return await prisma.pricingRule.findMany({
-    orderBy: [
-      { boxModelCode: 'asc' },
-      { materialCode: 'asc' },
-      { thickness: 'asc' },
-      { quantityTier: 'asc' },
-    ],
-  });
-};
-
-/**
- * Get pricing rule by ID
- */
-export const getPricingRuleById = async (id) => {
-  return await prisma.pricingRule.findUnique({
-    where: { id: parseInt(id) },
-  });
-};
-
-/**
- * Create new pricing rule (dengan validasi manual)
- */
-export const createPricingRule = async (data) => {
-  return await upsertPricingRule(data);
-};
-
-/**
- * Update pricing rule by ID
- */
-export const updatePricingRuleById = async (id, data) => {
-  await validatePricingRuleInput(data);
-
-  const laminationType = data.laminationPart === 'tanpa-laminasi' ? null : (data.laminationType ?? null);
-
-  try {
-    return await prisma.pricingRule.update({
-      where: { id: parseInt(id) },
-      data: {
-        boxModelCode:   data.boxModelCode,
-        materialCode:   data.materialCode,
-        thickness:      parseInt(data.thickness),
-        colorSides:     data.colorSides,
-        laminationPart: data.laminationPart,
-        laminationType,
-        quantityTier:   parseInt(data.quantityTier),
-        pricePerUnit:   parseFloat(data.pricePerUnit),
-        shippingCost:   data.shippingCost != null ? parseFloat(data.shippingCost) : null,
-        isActive:       data.isActive !== undefined ? data.isActive : true,
-      },
-    });
-  } catch (e) {
-    if (e.code === 'P2002') {
-      throw new Error('Kombinasi 7 field ini sudah digunakan oleh baris lain. Ubah salah satu field.');
-    }
-    throw e;
-  }
-};
-
-/**
- * Delete pricing rule
- */
-export const deletePricingRule = async (id) => {
-  return await prisma.pricingRule.delete({
-    where: { id: parseInt(id) },
-  });
-};
-
-/**
- * Toggle pricing rule active status
- */
-export const togglePricingRuleStatus = async (id) => {
-  const rule = await prisma.pricingRule.findUnique({
-    where: { id: parseInt(id) },
-  });
-
-  if (!rule) {
-    throw new Error('Pricing rule not found');
-  }
-
-  return await prisma.pricingRule.update({
-    where: { id: parseInt(id) },
-    data: { isActive: !rule.isActive },
-  });
-};
 
 // ==========================================
 // BANK ACCOUNTS
@@ -763,79 +502,114 @@ export const deleteBankAccount = async (id) => {
 };
 
 // ==========================================
-// PRICE CALCULATION (menggunakan PricingRule 7-field)
+// PLANO TYPES
+// ==========================================
+
+export const getAllPlanoTypes = async () => {
+  return await prisma.planoType.findMany({
+    orderBy: { sortOrder: 'asc' },
+  });
+};
+
+export const createPlanoType = async (data) => {
+  return await prisma.planoType.create({
+    data: {
+      code: data.code,
+      width: parseFloat(data.width),
+      height: parseFloat(data.height),
+      effectiveWidth: parseFloat(data.effectiveWidth),
+      effectiveHeight: parseFloat(data.effectiveHeight),
+      isActive: data.isActive !== undefined ? data.isActive : true,
+      sortOrder: data.sortOrder ? parseInt(data.sortOrder) : 0,
+    },
+  });
+};
+
+export const updatePlanoType = async (id, data) => {
+  return await prisma.planoType.update({
+    where: { id: parseInt(id) },
+    data: {
+      code: data.code,
+      width: parseFloat(data.width),
+      height: parseFloat(data.height),
+      effectiveWidth: parseFloat(data.effectiveWidth),
+      effectiveHeight: parseFloat(data.effectiveHeight),
+      isActive: data.isActive !== undefined ? data.isActive : true,
+      sortOrder: data.sortOrder ? parseInt(data.sortOrder) : 0,
+    },
+  });
+};
+
+export const togglePlanoTypeStatus = async (id) => {
+  const plano = await prisma.planoType.findUnique({
+    where: { id: parseInt(id) },
+  });
+  if (!plano) throw new Error('PlanoType not found');
+
+  return await prisma.planoType.update({
+    where: { id: parseInt(id) },
+    data: { isActive: !plano.isActive },
+  });
+};
+
+export const deletePlanoType = async (id) => {
+  return await prisma.planoType.delete({
+    where: { id: parseInt(id) },
+  });
+};
+
+// ==========================================
+// MATERIAL PRICES
 // ==========================================
 
 /**
- * Calculate order price menggunakan PricingRule matrix 7-field
- * Jika kombinasi tidak ditemukan di PricingRule, kembalikan found=false
- * @param {Object} orderData - Data order dari form
+ * Get distinct thickness values available for a material code
  */
-export const calculateOrderPrice = async (orderData) => {
-  const {
-    boxModel,
-    material,
-    thickness,
-    colorSides,
-    laminationSide,   // alias laminationPart
-    laminationPart,
-    laminationType,
-    quantity,
-  } = orderData;
-
-  const resolvedLaminationPart = laminationPart || laminationSide;
-  const resolvedLaminationType = resolvedLaminationPart === 'tanpa-laminasi' ? null : (laminationType || null);
-
-  // Cari PricingRule berdasarkan 7 field
-  const priceResult = await lookupPrice({
-    boxModelCode:   boxModel,
-    materialCode:   material,
-    thickness:      parseInt(thickness),
-    colorSides,
-    laminationPart: resolvedLaminationPart,
-    laminationType: resolvedLaminationType,
-    quantityTier:   parseInt(quantity),
+export const getThicknessByMaterialCode = async (materialCode) => {
+  const prices = await prisma.materialPrice.findMany({
+    where: { materialCode },
+    select: { thickness: true },
+    distinct: ['thickness'],
+    orderBy: { thickness: 'asc' },
   });
-
-  if (!priceResult.found) {
-    return {
-      found:          false,
-      reason:         priceResult.reason,
-      message:        priceResult.reason === 'price_not_set'
-                        ? 'Harga untuk kombinasi ini belum diatur oleh admin. Silakan hubungi kami.'
-                        : 'Silakan masukkan quantity yang valid.',
-      boxModel,
-      material,
-      thickness,
-      colorSides,
-      laminationPart: resolvedLaminationPart,
-      laminationType: resolvedLaminationType,
-      quantity,
-    };
-  }
-
-  const pricePerUnit = priceResult.pricePerUnit;
-  const shippingCost = priceResult.shippingCost || 0;
-  const subtotal = pricePerUnit * parseInt(quantity);
-  const tax = subtotal * 0.11; // PPN 11%
-  const totalAmount = subtotal + tax + shippingCost;
-
-  return {
-    found:          true,
-    pricePerUnit,
-    shippingCost,
-    quantity:       parseInt(quantity),
-    subtotal:       subtotal.toFixed(2),
-    tax:            tax.toFixed(2),
-    totalAmount:    totalAmount.toFixed(2),
-    ruleId:         priceResult.ruleId,
-    // Info kombinasi
-    boxModel,
-    material,
-    thickness,
-    colorSides,
-    laminationPart: resolvedLaminationPart,
-    laminationType: resolvedLaminationType,
-  };
+  return prices.map(p => p.thickness);
 };
 
+export const getAllMaterialPrices = async () => {
+  return await prisma.materialPrice.findMany({
+    orderBy: [
+      { materialCode: 'asc' },
+      { thickness: 'asc' },
+      { planoCode: 'asc' },
+    ],
+  });
+};
+
+export const createMaterialPrice = async (data) => {
+  return await prisma.materialPrice.create({
+    data: {
+      planoCode: data.planoCode,
+      materialCode: data.materialCode,
+      thickness: parseInt(data.thickness),
+      price: parseFloat(data.price),
+    },
+  });
+};
+
+export const updateMaterialPrice = async (id, data) => {
+  return await prisma.materialPrice.update({
+    where: { id: parseInt(id) },
+    data: {
+      planoCode: data.planoCode,
+      materialCode: data.materialCode,
+      thickness: parseInt(data.thickness),
+      price: parseFloat(data.price),
+    },
+  });
+};
+
+export const deleteMaterialPrice = async (id) => {
+  return await prisma.materialPrice.delete({
+    where: { id: parseInt(id) },
+  });
+};

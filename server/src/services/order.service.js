@@ -45,23 +45,31 @@ export const createOrder = async (userId, orderData) => {
       customerNote: orderData.customerNote || null,
       quantity: orderData.quantity,
 
-      // Pricing Engine v2 fields
+      // Pricing Engine v3 fields
       planoType: pricing.planoType || null,
       paperWidth: pricing.paperWidth || null,
       paperHeight: pricing.paperHeight || null,
       jumlahMata: pricing.jumlahMata || null,
       planoOrientation: pricing.planoOrientation || null,
-      hargaMaterial: pricing.hargaMaterial || null,
-      hargaWarna: pricing.hargaWarna || null,
-      hargaLaminasi: pricing.hargaLaminasi || null,
-      subtotalPerUnit: pricing.subtotalPerUnit || null,
-      markup: pricing.markup || 85,
-      totalPrice: pricing.totalPrice || null,
+      qtyPlano: pricing.qtyPlano || null,
+      qtyRim: pricing.qtyRim || null,
+
+      // Breakdown harga produksi v3
+      hargaKertas: pricing.hargaKertas || null,
+      hargaCetak: pricing.hargaCetak || null,
+      hargaDrag: pricing.hargaDrag || 0,
+      hargaPlat: pricing.hargaPlat || null,
+      hargaPisau: pricing.hargaPisau || null,
+      hargaPond: pricing.hargaPond || null,
+      hargaPacking: pricing.hargaPacking || null,
+      hargaLaminasi: pricing.hargaLaminasi || 0,
+      totalBayar: pricing.totalBayar || null,
+      hargaPerPcs: pricing.hargaPerPcs || null,
 
       // Legacy fields
-      subtotal: pricing.subtotal || pricing.totalPrice || 0,
+      subtotal: pricing.totalBayar || pricing.subtotal || 0,
       tax: pricing.tax || 0,
-      totalAmount: pricing.totalAmount || pricing.totalPrice || 0,
+      totalAmount: pricing.totalBayar || pricing.totalAmount || 0,
 
       orderStatus: 'WAITING_PAYMENT',
       paymentStatus: 'UNPAID',

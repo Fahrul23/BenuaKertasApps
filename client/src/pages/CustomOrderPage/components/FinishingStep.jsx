@@ -1,6 +1,5 @@
 import { Check } from 'lucide-react';
 import { cn } from '@/utils';
-import { LAMINATION_SIDE_OPTIONS, LAMINATION_TYPE_OPTIONS } from '../constants';
 
 const OptionCard = ({ option, selected, onClick }) => (
   <div onClick={() => onClick(option.id)} className="relative cursor-pointer group">
@@ -24,11 +23,18 @@ const OptionCard = ({ option, selected, onClick }) => (
 
       {/* Content Container */}
       <div className="absolute inset-2 md:inset-3 bottom-10 md:bottom-12 bg-white overflow-hidden rounded transition-transform duration-300 group-hover:scale-105 flex items-center justify-center">
-        <img
-          src={option.image}
-          alt={option.name}
-          className="w-full h-full object-contain"
-        />
+        {option.image ? (
+          <img
+            src={option.image}
+            alt={option.name}
+            className="w-full h-full object-contain"
+            onError={(e) => { e.target.style.display = 'none'; }}
+          />
+        ) : (
+          <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+            <span className="text-xs text-gray-400">No img</span>
+          </div>
+        )}
       </div>
 
       {/* Label - Bottom */}
@@ -41,7 +47,7 @@ const OptionCard = ({ option, selected, onClick }) => (
   </div>
 );
 
-const FinishingStep = ({ laminationSide, laminationType, onSideSelect, onTypeSelect }) => {
+const FinishingStep = ({ laminationSide, laminationType, sideOptions = [], typeOptions = [], onSideSelect, onTypeSelect }) => {
   // Tampilkan baris Tipe Laminasi hanya jika sisi sudah dipilih dan bukan tanpa-laminasi
   const showLaminationType = laminationSide !== '' && laminationSide !== null && laminationSide !== 'tanpa-laminasi';
 
@@ -63,32 +69,40 @@ const FinishingStep = ({ laminationSide, laminationType, onSideSelect, onTypeSel
       {/* Baris 1: Sisi Laminasi — selalu tampil */}
       <section className="mb-8">
         <p className="text-color-secondary text-sm font-semibold mb-4">Sisi Laminasi</p>
-        <div className="grid grid-cols-4 gap-6">
-          {LAMINATION_SIDE_OPTIONS.map((option) => (
-            <OptionCard
-              key={option.id}
-              option={option}
-              selected={laminationSide === option.id}
-              onClick={handleSideChange}
-            />
-          ))}
-        </div>
+        {sideOptions.length === 0 ? (
+          <div className="text-sm text-gray-400">Memuat opsi sisi laminasi...</div>
+        ) : (
+          <div className="grid grid-cols-4 gap-6">
+            {sideOptions.map((option) => (
+              <OptionCard
+                key={option.id}
+                option={option}
+                selected={laminationSide === option.id}
+                onClick={handleSideChange}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Baris 2: Tipe Laminasi — hanya tampil jika bukan tanpa-laminasi */}
       {showLaminationType && (
         <section className="transition-all duration-300 animate-in fade-in slide-in-from-bottom-2">
           <p className="text-color-secondary text-sm font-semibold mb-4">Tipe Laminasi</p>
-          <div className="grid grid-cols-4 gap-6">
-            {LAMINATION_TYPE_OPTIONS.map((option) => (
-              <OptionCard
-                key={option.id}
-                option={option}
-                selected={laminationType === option.id}
-                onClick={onTypeSelect}
-              />
-            ))}
-          </div>
+          {typeOptions.length === 0 ? (
+            <div className="text-sm text-gray-400">Memuat opsi tipe laminasi...</div>
+          ) : (
+            <div className="grid grid-cols-4 gap-6">
+              {typeOptions.map((option) => (
+                <OptionCard
+                  key={option.id}
+                  option={option}
+                  selected={laminationType === option.id}
+                  onClick={onTypeSelect}
+                />
+              ))}
+            </div>
+          )}
         </section>
       )}
     </div>
@@ -96,3 +110,4 @@ const FinishingStep = ({ laminationSide, laminationType, onSideSelect, onTypeSel
 };
 
 export default FinishingStep;
+

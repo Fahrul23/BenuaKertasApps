@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Navbar, Footer, Stepper } from '@/components';
 import { getVisibleSteps, NEXT_BUTTON_TEXT } from './constants';
-import { calculatorAPI } from '@/services/api';
+import { calculatorAPI, masterDataAPI } from '@/services/api';
 import ModelStep from './components/ModelStep';
 import SizeStep from './components/SizeStep';
 import MaterialStep from './components/MaterialStep';
@@ -12,12 +12,6 @@ import FinishingStep from './components/FinishingStep';
 import UploadStep from './components/UploadStep';
 import QuantityStep from './components/QuantityStep';
 import ReviewStep from './components/ReviewStep';
-import PriceSummary from './components/PriceSummary';
-import earlockBoxDepanImg from '@/assets/earlock-box-depan.svg';
-import earlockBoxSampingImg from '@/assets/earlock-box-samping.svg';
-import topBottomBoxImg from '@/assets/top-bottom-box.svg';
-import lunchBoxImg from '@/assets/lunch-box.svg';
-import trayBoxImg from '@/assets/tray-box.svg';
 
 const CustomOrderPage = () => {
   const navigate = useNavigate();
@@ -58,17 +52,90 @@ const CustomOrderPage = () => {
   });
   const [pricingError, setPricingError] = useState(null);
 
-  const boxData = {
+  const [boxData, setBoxData] = useState({
     title: 'CUSTOM BOX',
     description: 'Atur spesifikasi custom box sesuai kebutuhan, perhatikan setiap langkah di setiap bagiannya terisi sesuai dengan instruksi',
-    models: [
-      { id: 'earlock-box-depan', name: 'Earlock Box Depan', image: earlockBoxDepanImg },
-      { id: 'earlock-box-samping', name: 'Earlock Box Samping', image: earlockBoxSampingImg },
-      { id: 'top-bottom-box', name: 'Top Bottom Box', image: topBottomBoxImg },
-      { id: 'lunch-box', name: 'Lunch Box', image: lunchBoxImg },
-      { id: 'tray-box', name: 'Tray Box', image: trayBoxImg },
-    ]
-  };
+    models: [] // Will be populated from API
+  });
+
+  // Materials from API
+  const [materialsData, setMaterialsData] = useState([]);
+  // Thickness options per selected material (from API)
+  const [thicknessOptions, setThicknessOptions] = useState([]);
+
+  // Finishing options from API
+  const [laminationSideOptions, setLaminationSideOptions] = useState([]);
+  const [laminationTypeOptions, setLaminationTypeOptions] = useState([]);
+
+  // Fetch Box Models from API
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        const res = await masterDataAPI.getBoxModels();
+        if (res.success && res.data.length > 0) {
+          const apiModels = res.data.map(m => {
+            return {
+              id: m.code,
+              name: m.name,
+              image: m.imageUrl
+            };
+          });
+          setBoxData(prev => ({ ...prev, models: apiModels }));
+        } else {
+          // If API is empty, set models to empty array
+          setBoxData(prev => ({ ...prev, models: [] }));
+        }
+      } catch (err) {
+        console.error('Failed to fetch models from API', err);
+        // On error, set models to empty array
+        setBoxData(prev => ({ ...prev, models: [] }));
+      }
+    };
+    fetchModels();
+  }, []);
+
+  // Fetch Materials from API
+  useEffect(() => {
+    const fetchMaterials = async () => {
+      try {
+        const res = await masterDataAPI.getMaterials();
+        if (res.success && res.data.length > 0) {
+          const apiMaterials = res.data.map(m => ({
+            id: m.code,
+            name: m.name,
+            image: m.imageUrl
+          }));
+          setMaterialsData(apiMaterials);
+        }
+      } catch (err) {
+        console.error('Failed to fetch materials from API', err);
+      }
+    };
+    fetchMaterials();
+  }, []);
+
+  // Fetch Finishing Options from API
+  useEffect(() => {
+    const fetchFinishingOptions = async () => {
+      try {
+        const res = await masterDataAPI.getFinishingOptions();
+        if (res.success && res.data.length > 0) {
+          const sideOpts = res.data
+            .filter(opt => opt.category === 'side')
+            .map(opt => ({ id: opt.code, name: opt.name, image: opt.imageUrl }));
+          const typeOpts = res.data
+            .filter(opt => opt.category === 'type')
+            .map(opt => ({ id: opt.code, name: opt.name, image: opt.imageUrl }));
+          
+          setLaminationSideOptions(sideOpts);
+          setLaminationTypeOptions(typeOpts);
+        }
+      } catch (err) {
+        console.error('Failed to fetch finishing options from API', err);
+      }
+    };
+    fetchFinishingOptions();
+  }, []);
 
   // ============ AUTO PRICE CALCULATION ============
   const calculatePricing = useCallback(async () => {
@@ -76,6 +143,8 @@ const CustomOrderPage = () => {
     if (!selectedModel || !sizes.panjang || !sizes.lebar || !sizes.tinggi) {
       return;
     }
+    if (selectedModel === 'top-bottom-box' && !sizes.tinggiTutup) return;
+    if (selectedModel === 'earlock-box-samping' && !sizes.lidah) return;
 
     try {
       setPricingError(null);
@@ -122,10 +191,21 @@ const CustomOrderPage = () => {
   }, [calculatePricing]);
 
   // Reset thickness when material changes (because GSM options differ)
-  const handleMaterialSelect = (materialId) => {
+  const handleMaterialSelect = async (materialId) => {
     setSelectedMaterial(materialId);
-    // Reset thickness if current selection isn't valid for new material
-    setSelectedThickness(null);
+    setSelectedThickness(null); // reset thickness
+    // Fetch thickness options for this material from API
+    try {
+      const res = await masterDataAPI.getThicknessByMaterialCode(materialId);
+      if (res.success && res.data.length > 0) {
+        setThicknessOptions(res.data.map(t => ({ label: `${t} gsm`, value: String(t) })));
+      } else {
+        setThicknessOptions([]);
+      }
+    } catch (err) {
+      console.error('Failed to fetch thickness options', err);
+      setThicknessOptions([]);
+    }
   };
 
   const handleNext = () => {
@@ -135,6 +215,20 @@ const CustomOrderPage = () => {
     } else {
       if (currentStep < 8) {
         setCurrentStep(currentStep + 1);
+      } else if (currentStep === 8) {
+        const orderData = {
+          selectedModel,
+          sizes,
+          selectedMaterial,
+          selectedThickness,
+          selectedColor,
+          laminationSide,
+          laminationType,
+          quantity,
+          pricingData,
+          note
+        };
+        navigate('/payment', { state: { orderData } });
       }
     }
   };
@@ -173,14 +267,22 @@ const CustomOrderPage = () => {
       return selectedModel !== null;
     }
     if (currentStep === 2) {
-      const basicSizesValid = sizes.panjang > 0 && sizes.lebar > 0 && sizes.tinggi > 0;
+      const p = parseFloat(sizes.panjang) || 0;
+      const l = parseFloat(sizes.lebar) || 0;
+      const t = parseFloat(sizes.tinggi) || 0;
+      let basicSizesValid = p > 0 && l > 0 && t > 0;
+      
       if (selectedModel === 'top-bottom-box') {
-        return basicSizesValid && sizes.tinggiTutup > 0;
+        const tt = parseFloat(sizes.tinggiTutup) || 0;
+        basicSizesValid = basicSizesValid && tt > 0;
       }
+      
       if (selectedModel === 'earlock-box-samping') {
-        return basicSizesValid && sizes.lidah > 0;
+        const lidah = parseFloat(sizes.lidah) || 0;
+        basicSizesValid = basicSizesValid && lidah > 0;
       }
-      return basicSizesValid;
+      
+      return basicSizesValid && !pricingError;
     }
     if (currentStep === 3) {
       return selectedMaterial !== null && selectedThickness !== null;
@@ -240,125 +342,127 @@ const CustomOrderPage = () => {
 
         {/* Content Area */}
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
-            {/* Left Side - Info (2 columns = 40%) */}
-            <div className="lg:col-span-2">
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                <span className="text-color-secondary">
-                  {currentStep > 1 && selectedModel 
-                    ? boxData.models.find(m => m.id === selectedModel)?.name.toUpperCase() 
-                    : boxData.title}
-                </span>
-              </h1>
-              <div className="border-l-4 border-color-secondary pl-4 py-2 my-6">
-                <p className="text-color-gray text-sm leading-relaxed">
-                  {boxData.description}
-                </p>
+          {currentStep === 8 ? (
+            /* ── Step 8: Review — full-width layout ── */
+            <ReviewStep
+              selectedModel={selectedModel}
+              sizes={sizes}
+              selectedMaterial={selectedMaterial}
+              selectedThickness={selectedThickness}
+              selectedColor={selectedColor}
+              laminationSide={laminationSide}
+              laminationType={laminationType}
+              uploadedFile={uploadedFile}
+              quantity={quantity}
+              boxData={boxData}
+              pricingData={pricingData}
+              onEditStep={handleEditStep}
+              onEditAll={handleEditAll}
+              onNext={handleNext}
+            />
+          ) : (
+            /* ── Steps 1-7: standard two-panel layout ── */
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
+              {/* Left Side - Info (2 columns = 40%) */}
+              <div className="lg:col-span-2">
+                <h1 className="text-3xl md:text-4xl font-bold mb-2">
+                  <span className="text-color-secondary">
+                    {currentStep > 1 && selectedModel 
+                      ? boxData.models.find(m => m.id === selectedModel)?.name.toUpperCase() 
+                      : boxData.title}
+                  </span>
+                </h1>
+                <div className="border-l-4 border-color-secondary pl-4 py-2 my-6">
+                  <p className="text-color-gray text-sm leading-relaxed">
+                    {boxData.description}
+                  </p>
+                </div>
+
+                {/* WhatsApp Consultation Box */}
+                <div className="bg-color-secondary rounded-xl p-6 mt-6">
+                  <p className="text-white text-sm mb-4">
+                    Jika masih ada yang ingin ditanyakan seputar custom packaging Box ini bisa langsung hubungi kami via whatsapp
+                  </p>
+                  <button className="bg-white hover:bg-gray-50 text-color-primary font-semibold px-6 py-3 rounded-lg transition-colors duration-300">
+                    Konsultasikan sekarang
+                  </button>
+                </div>
               </div>
 
-              {/* Price Summary — Show after step 2 */}
-              {currentStep >= 2 && (
-                <PriceSummary pricingData={{ ...pricingData, quantity }} />
-              )}
+              {/* Right Side - Step Content (3 columns = 60%) */}
+              <div className="lg:col-span-3">
+                {/* Step 1: Model Selection */}
+                {currentStep === 1 && (
+                  <ModelStep
+                    models={boxData.models}
+                    selectedModel={selectedModel}
+                    onModelSelect={setSelectedModel}
+                  />
+                )}
 
-              {/* WhatsApp Consultation Box */}
-              <div className="bg-color-secondary rounded-xl p-6 mt-6">
-                <p className="text-white text-sm mb-4">
-                  Jika masih ada yang ingin ditanyakan seputar custom packaging Box ini bisa langsung hubungi kami via whatsapp
-                </p>
-                <button className="bg-white hover:bg-gray-50 text-color-primary font-semibold px-6 py-3 rounded-lg transition-colors duration-300">
-                  Konsultasikan sekarang
-                </button>
+                {/* Step 2: Size Input */}
+                {currentStep === 2 && (
+                  <SizeStep
+                    sizes={sizes}
+                    onSizeChange={handleSizeChange}
+                    selectedModel={selectedModel}
+                    planoInfo={pricingData}
+                    pricingError={pricingError}
+                  />
+                )}
+
+                {/* Step 3: Material Selection */}
+                {currentStep === 3 && (
+                  <MaterialStep
+                    materials={materialsData}
+                    selectedMaterial={selectedMaterial}
+                    selectedThickness={selectedThickness}
+                    thicknessOptions={thicknessOptions}
+                    onMaterialSelect={handleMaterialSelect}
+                    onThicknessSelect={setSelectedThickness}
+                  />
+                )}
+
+                {/* Step 4: Color Selection */}
+                {currentStep === 4 && (
+                  <ColorStep
+                    selectedColor={selectedColor}
+                    onColorSelect={setSelectedColor}
+                  />
+                )}
+
+                {/* Step 5: Finishing Selection */}
+                {currentStep === 5 && (
+                  <FinishingStep
+                    laminationSide={laminationSide}
+                    laminationType={laminationType}
+                    sideOptions={laminationSideOptions}
+                    typeOptions={laminationTypeOptions}
+                    onSideSelect={setLaminationSide}
+                    onTypeSelect={setLaminationType}
+                  />
+                )}
+
+                {/* Step 6: Upload File */}
+                {currentStep === 6 && (
+                  <UploadStep
+                    uploadedFile={uploadedFile}
+                    note={note}
+                    onFileUpload={setUploadedFile}
+                    onNoteChange={setNote}
+                  />
+                )}
+
+                {/* Step 7: Quantity Selection */}
+                {currentStep === 7 && (
+                  <QuantityStep
+                    quantity={quantity}
+                    onQuantityChange={setQuantity}
+                  />
+                )}
               </div>
             </div>
-
-            {/* Right Side - Step Content (3 columns = 60%) */}
-            <div className="lg:col-span-3">
-              {/* Step 1: Model Selection */}
-              {currentStep === 1 && (
-                <ModelStep
-                  models={boxData.models}
-                  selectedModel={selectedModel}
-                  onModelSelect={setSelectedModel}
-                />
-              )}
-
-              {/* Step 2: Size Input */}
-              {currentStep === 2 && (
-                <SizeStep
-                  sizes={sizes}
-                  onSizeChange={handleSizeChange}
-                  selectedModel={selectedModel}
-                  planoInfo={pricingData}
-                />
-              )}
-
-              {/* Step 3: Material Selection */}
-              {currentStep === 3 && (
-                <MaterialStep
-                  selectedMaterial={selectedMaterial}
-                  selectedThickness={selectedThickness}
-                  onMaterialSelect={handleMaterialSelect}
-                  onThicknessSelect={setSelectedThickness}
-                />
-              )}
-
-              {/* Step 4: Color Selection */}
-              {currentStep === 4 && (
-                <ColorStep
-                  selectedColor={selectedColor}
-                  onColorSelect={setSelectedColor}
-                />
-              )}
-
-              {/* Step 5: Finishing Selection */}
-              {currentStep === 5 && (
-                <FinishingStep
-                  laminationSide={laminationSide}
-                  laminationType={laminationType}
-                  onSideSelect={setLaminationSide}
-                  onTypeSelect={setLaminationType}
-                />
-              )}
-
-              {/* Step 6: Upload File */}
-              {currentStep === 6 && (
-                <UploadStep
-                  uploadedFile={uploadedFile}
-                  note={note}
-                  onFileUpload={setUploadedFile}
-                  onNoteChange={setNote}
-                />
-              )}
-
-              {/* Step 7: Quantity Selection */}
-              {currentStep === 7 && (
-                <QuantityStep
-                  quantity={quantity}
-                  onQuantityChange={setQuantity}
-                />
-              )}
-
-              {/* Step 8: Review Order */}
-              {currentStep === 8 && (
-                <ReviewStep
-                  selectedModel={selectedModel}
-                  sizes={sizes}
-                  selectedMaterial={selectedMaterial}
-                  selectedThickness={selectedThickness}
-                  selectedColor={selectedColor}
-                  laminationSide={laminationSide}
-                  laminationType={laminationType}
-                  uploadedFile={uploadedFile}
-                  quantity={quantity}
-                  boxData={boxData}
-                  pricingData={pricingData}
-                  onEditStep={handleEditStep}
-                  onEditAll={handleEditAll}
-                />
-              )}
-            </div>
-          </div>
+          )}
         </div>
       </main>
 

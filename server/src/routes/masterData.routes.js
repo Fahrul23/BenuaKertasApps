@@ -1,5 +1,7 @@
 import express from 'express';
 import * as masterDataController from '../controllers/masterData.controller.js';
+import * as pricingConfigController from '../controllers/pricingConfig.controller.js';
+import * as cmykBlokPriceController from '../controllers/cmykBlokPrice.controller.js';
 
 const router = express.Router();
 
@@ -73,6 +75,9 @@ router.get('/materials/all', masterDataController.getAllMaterials);
 /** GET /api/master-data/materials/code/:code — Get material by code */
 router.get('/materials/code/:code', masterDataController.getMaterialByCode);
 
+/** GET /api/master-data/materials/code/:code/thicknesses — Get thickness options for material */
+router.get('/materials/code/:code/thicknesses', masterDataController.getThicknessByMaterialCode);
+
 /** GET /api/master-data/materials/:id — Get material by ID */
 router.get('/materials/:id', masterDataController.getMaterialById);
 
@@ -113,57 +118,6 @@ router.delete('/finishing-options/:id', masterDataController.deleteFinishingOpti
 /** PATCH /api/master-data/finishing-options/:id/toggle — toggle status */
 router.patch('/finishing-options/:id/toggle', masterDataController.toggleFinishingOptionStatus);
 
-// ==========================================
-// PRICING RULES — 7-field matrix CRUD
-// ==========================================
-
-/**
- * GET /api/master-data/pricing-rules
- * Get all active pricing rules
- */
-router.get('/pricing-rules', masterDataController.getPricingRules);
-
-/**
- * GET /api/master-data/pricing-rules/all
- * Get all pricing rules (including inactive) - for admin
- */
-router.get('/pricing-rules/all', masterDataController.getAllPricingRules);
-
-/**
- * POST /api/master-data/pricing-rules/lookup
- * Lookup harga berdasarkan kombinasi 7 field
- */
-router.post('/pricing-rules/lookup', masterDataController.lookupPricingRule);
-
-/**
- * GET /api/master-data/pricing-rules/:id
- * Get pricing rule by ID
- */
-router.get('/pricing-rules/:id', masterDataController.getPricingRuleById);
-
-/**
- * POST /api/master-data/pricing-rules
- * Create or upsert pricing rule
- */
-router.post('/pricing-rules', masterDataController.createPricingRule);
-
-/**
- * PUT /api/master-data/pricing-rules/:id
- * Update pricing rule by ID
- */
-router.put('/pricing-rules/:id', masterDataController.updatePricingRule);
-
-/**
- * DELETE /api/master-data/pricing-rules/:id
- * Delete pricing rule
- */
-router.delete('/pricing-rules/:id', masterDataController.deletePricingRule);
-
-/**
- * PATCH /api/master-data/pricing-rules/:id/toggle
- * Toggle pricing rule active status
- */
-router.patch('/pricing-rules/:id/toggle', masterDataController.togglePricingRuleStatus);
 
 // ==========================================
 // BANK ACCOUNTS
@@ -204,15 +158,32 @@ router.patch('/bank-accounts/:id/toggle', masterDataController.toggleBankAccount
  */
 router.delete('/bank-accounts/:id', masterDataController.deleteBankAccount);
 
+
 // ==========================================
-// PRICE CALCULATION
+// CMYK BLOK PRICES
 // ==========================================
 
-/**
- * POST /api/master-data/calculate-price
- * Calculate order price berdasarkan PricingRule 7-field matrix
- */
-router.post('/calculate-price', masterDataController.calculatePrice);
+router.get('/cmyk-blok-prices', cmykBlokPriceController.getCmykBlokPrices);
+router.get('/cmyk-blok-prices/all', cmykBlokPriceController.getAllCmykBlokPrices);
+router.post('/cmyk-blok-prices', cmykBlokPriceController.createCmykBlokPrice);
+router.put('/cmyk-blok-prices/:id', cmykBlokPriceController.updateCmykBlokPrice);
+router.delete('/cmyk-blok-prices/:id', cmykBlokPriceController.deleteCmykBlokPrice);
+router.patch('/cmyk-blok-prices/:id/toggle', cmykBlokPriceController.toggleCmykBlokPriceStatus);
+
+// ==========================================
+// PRICING CONFIG
+// ==========================================
+
+router.get('/pricing-config', pricingConfigController.getPricingConfig);
+router.put('/pricing-config', pricingConfigController.updatePricingConfig);
+
+// ==========================================
+// MATERIAL PRICES
+// ==========================================
+
+router.get('/material-prices', masterDataController.getAllMaterialPrices);
+router.post('/material-prices', masterDataController.createMaterialPrice);
+router.put('/material-prices/:id', masterDataController.updateMaterialPrice);
+router.delete('/material-prices/:id', masterDataController.deleteMaterialPrice);
 
 export default router;
-

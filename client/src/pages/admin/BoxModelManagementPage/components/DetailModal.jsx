@@ -1,10 +1,5 @@
 import { X, Box, Calendar, Tag, FileText, Image } from 'lucide-react';
 
-const formatPrice = (val) => {
-  if (val == null) return '-';
-  return `Rp ${parseFloat(val).toLocaleString('id-ID')}`;
-};
-
 const formatDate = (dateStr) => {
   if (!dateStr) return '-';
   return new Date(dateStr).toLocaleDateString('id-ID', {
@@ -95,15 +90,6 @@ const BoxModelDetailModal = ({ boxModel, onClose }) => {
                 <p className="text-sm text-gray-700 leading-relaxed">{boxModel.description}</p>
               </div>
             )}
-          </div>
-
-          {/* Pricing */}
-          <div className="p-4 bg-color-lighter rounded-xl space-y-2">
-            <p className="text-xs font-bold text-color-darker uppercase tracking-widest">Harga</p>
-            <div className="bg-white rounded-lg p-3 border border-color-light">
-              <p className="text-xs text-gray-500 mb-1">Base Price</p>
-              <p className="text-lg font-bold text-color-darker">{formatPrice(boxModel.basePrice)}</p>
-            </div>
           </div>
 
           {/* Timestamps */}

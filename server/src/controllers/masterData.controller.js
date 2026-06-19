@@ -532,274 +532,7 @@ export const toggleFinishingOptionStatus = async (req, res) => {
   }
 };
 
-// ==========================================
-// PRICING RULES — 7-field matrix CRUD
-// ==========================================
 
-/**
- * GET /api/master-data/pricing-rules
- * Get all active pricing rules
- */
-export const getPricingRules = async (req, res) => {
-  try {
-    const pricingRules = await masterDataService.getActivePricingRules();
-    
-    res.status(200).json({
-      success: true,
-      message: 'Pricing rules retrieved successfully',
-      data: pricingRules,
-    });
-  } catch (error) {
-    console.error('Error getting pricing rules:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve pricing rules',
-      error: error.message,
-    });
-  }
-};
-
-/**
- * GET /api/master-data/pricing-rules/all
- * Get all pricing rules (including inactive) - for admin
- */
-export const getAllPricingRules = async (req, res) => {
-  try {
-    const pricingRules = await masterDataService.getAllPricingRules();
-    
-    res.status(200).json({
-      success: true,
-      message: 'All pricing rules retrieved successfully',
-      data: pricingRules,
-    });
-  } catch (error) {
-    console.error('Error getting all pricing rules:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve pricing rules',
-      error: error.message,
-    });
-  }
-};
-
-/**
- * GET /api/master-data/pricing-rules/:id
- * Get pricing rule by ID
- */
-export const getPricingRuleById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const rule = await masterDataService.getPricingRuleById(id);
-    
-    if (!rule) {
-      return res.status(404).json({
-        success: false,
-        message: 'Pricing rule not found',
-      });
-    }
-    
-    res.status(200).json({
-      success: true,
-      message: 'Pricing rule retrieved successfully',
-      data: rule,
-    });
-  } catch (error) {
-    console.error('Error getting pricing rule:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve pricing rule',
-      error: error.message,
-    });
-  }
-};
-
-/**
- * POST /api/master-data/pricing-rules
- * Create or upsert pricing rule (berdasarkan kombinasi 7 field)
- * Body: { boxModelCode, materialCode, thickness, colorSides, laminationPart, laminationType, quantityTier, pricePerUnit, shippingCost }
- */
-export const createPricingRule = async (req, res) => {
-  try {
-    const data = req.body;
-    
-    // Validate required fields
-    const required = ['boxModelCode', 'materialCode', 'thickness', 'colorSides', 'laminationPart', 'quantityTier', 'pricePerUnit'];
-    const missing = required.filter(f => !data[f] && data[f] !== 0);
-    
-    if (missing.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: `Field wajib tidak lengkap: ${missing.join(', ')}`,
-        missingFields: missing,
-      });
-    }
-    
-    const rule = await masterDataService.createPricingRule(data);
-    
-    res.status(201).json({
-      success: true,
-      message: 'Pricing rule created successfully',
-      data: rule,
-    });
-  } catch (error) {
-    console.error('Error creating pricing rule:', error);
-    
-    if (error.code === 'P2002' || error.message.includes('sudah ada')) {
-      return res.status(400).json({
-        success: false,
-        message: error.message || 'Kombinasi harga ini sudah ada.',
-      });
-    }
-    
-    res.status(500).json({
-      success: false,
-      message: 'Failed to create pricing rule',
-      error: error.message,
-    });
-  }
-};
-
-/**
- * PUT /api/master-data/pricing-rules/:id
- * Update pricing rule by ID
- */
-export const updatePricingRule = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const data = req.body;
-    
-    const required = ['boxModelCode', 'materialCode', 'thickness', 'colorSides', 'laminationPart', 'quantityTier', 'pricePerUnit'];
-    const missing = required.filter(f => !data[f] && data[f] !== 0);
-    
-    if (missing.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: `Field wajib tidak lengkap: ${missing.join(', ')}`,
-        missingFields: missing,
-      });
-    }
-    
-    const rule = await masterDataService.updatePricingRuleById(id, data);
-    
-    res.status(200).json({
-      success: true,
-      message: 'Pricing rule updated successfully',
-      data: rule,
-    });
-  } catch (error) {
-    console.error('Error updating pricing rule:', error);
-    
-    if (error.code === 'P2025') {
-      return res.status(404).json({
-        success: false,
-        message: 'Pricing rule not found',
-      });
-    }
-    if (error.code === 'P2002' || error.message.includes('sudah digunakan')) {
-      return res.status(400).json({
-        success: false,
-        message: error.message || 'Kombinasi 7 field ini sudah digunakan.',
-      });
-    }
-    
-    res.status(500).json({
-      success: false,
-      message: 'Failed to update pricing rule',
-      error: error.message,
-    });
-  }
-};
-
-/**
- * DELETE /api/master-data/pricing-rules/:id
- * Delete pricing rule
- */
-export const deletePricingRule = async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    await masterDataService.deletePricingRule(id);
-    
-    res.status(200).json({
-      success: true,
-      message: 'Pricing rule deleted successfully',
-    });
-  } catch (error) {
-    console.error('Error deleting pricing rule:', error);
-    
-    if (error.code === 'P2025') {
-      return res.status(404).json({
-        success: false,
-        message: 'Pricing rule not found',
-      });
-    }
-    
-    res.status(500).json({
-      success: false,
-      message: 'Failed to delete pricing rule',
-      error: error.message,
-    });
-  }
-};
-
-/**
- * PATCH /api/master-data/pricing-rules/:id/toggle
- * Toggle pricing rule active status
- */
-export const togglePricingRuleStatus = async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    const rule = await masterDataService.togglePricingRuleStatus(id);
-    
-    res.status(200).json({
-      success: true,
-      message: `Pricing rule ${rule.isActive ? 'activated' : 'deactivated'} successfully`,
-      data: rule,
-    });
-  } catch (error) {
-    console.error('Error toggling pricing rule status:', error);
-    
-    if (error.message === 'Pricing rule not found') {
-      return res.status(404).json({
-        success: false,
-        message: 'Pricing rule not found',
-      });
-    }
-    
-    res.status(500).json({
-      success: false,
-      message: 'Failed to toggle pricing rule status',
-      error: error.message,
-    });
-  }
-};
-
-/**
- * POST /api/master-data/pricing-rules/lookup
- * Lookup harga berdasarkan kombinasi 7 field
- * Body: { boxModelCode, materialCode, thickness, colorSides, laminationPart, laminationType, quantityTier }
- */
-export const lookupPricingRule = async (req, res) => {
-  try {
-    const data = req.body;
-    
-    const result = await masterDataService.lookupPrice(data);
-    
-    res.status(200).json({
-      success: true,
-      message: result.found ? 'Harga ditemukan' : 'Harga tidak ditemukan untuk kombinasi ini',
-      data: result,
-    });
-  } catch (error) {
-    console.error('Error looking up pricing rule:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to lookup pricing rule',
-      error: error.message,
-    });
-  }
-};
 
 // ==========================================
 // BANK ACCOUNTS
@@ -984,83 +717,109 @@ export const deleteBankAccount = async (req, res) => {
 };
 
 // ==========================================
-// PRICE CALCULATION
+// PLANO TYPES
 // ==========================================
 
-/**
- * POST /api/master-data/calculate-price
- * Calculate order price berdasarkan PricingRule 7-field matrix
- * 
- * Body:
- * {
- *   boxModel: string,
- *   material: string,
- *   thickness: number (300|350|400|450),
- *   colorSides: string ("1-sisi"|"2-sisi"),
- *   laminationSide atau laminationPart: string,
- *   laminationType: string|null,
- *   quantity: number
- * }
- */
-export const calculatePrice = async (req, res) => {
+export const getAllPlanoTypes = async (req, res) => {
   try {
-    const orderData = req.body;
-    
-    // Validate required fields
-    const requiredFields = ['boxModel', 'material', 'thickness', 'colorSides', 'quantity'];
-    const laminationField = orderData.laminationPart || orderData.laminationSide;
-    
-    const missingFields = requiredFields.filter(field => !orderData[field] && orderData[field] !== 0);
-    
-    if (missingFields.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing required fields',
-        missingFields,
-      });
-    }
-
-    if (!laminationField) {
-      return res.status(400).json({
-        success: false,
-        message: 'laminationPart atau laminationSide wajib diisi',
-      });
-    }
-
-    // Validasi laminationType
-    if (laminationField !== 'tanpa-laminasi' && !orderData.laminationType) {
-      return res.status(400).json({
-        success: false,
-        message: 'laminationType wajib dipilih kecuali jika laminationPart adalah tanpa-laminasi',
-      });
-    }
-    // Paksa null jika tanpa-laminasi
-    if (laminationField === 'tanpa-laminasi') {
-      orderData.laminationType = null;
-    }
-    
-    const priceData = await masterDataService.calculateOrderPrice(orderData);
-    
-    if (!priceData.found) {
-      return res.status(404).json({
-        success: false,
-        message: priceData.message || 'Harga tidak ditemukan untuk kombinasi ini',
-        data: priceData,
-      });
-    }
-    
-    res.status(200).json({
-      success: true,
-      message: 'Price calculated successfully',
-      data: priceData,
-    });
+    const data = await masterDataService.getAllPlanoTypes();
+    res.status(200).json({ success: true, message: 'Plano types retrieved', data });
   } catch (error) {
-    console.error('Error calculating price:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to calculate price',
-      error: error.message,
-    });
+    res.status(500).json({ success: false, message: 'Failed to retrieve plano types', error: error.message });
   }
 };
 
+export const createPlanoType = async (req, res) => {
+  try {
+    const data = await masterDataService.createPlanoType(req.body);
+    res.status(201).json({ success: true, message: 'Plano type created', data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to create plano type', error: error.message });
+  }
+};
+
+export const updatePlanoType = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await masterDataService.updatePlanoType(id, req.body);
+    res.status(200).json({ success: true, message: 'Plano type updated', data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to update plano type', error: error.message });
+  }
+};
+
+export const togglePlanoTypeStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await masterDataService.togglePlanoTypeStatus(id);
+    res.status(200).json({ success: true, message: 'Plano type status toggled', data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to toggle plano type', error: error.message });
+  }
+};
+
+export const deletePlanoType = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await masterDataService.deletePlanoType(id);
+    res.status(200).json({ success: true, message: 'Plano type deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to delete plano type', error: error.message });
+  }
+};
+
+// ==========================================
+// MATERIAL PRICES
+// ==========================================
+
+/**
+ * GET /api/master-data/materials/code/:code/thicknesses
+ * Get distinct thickness options for a given material code
+ */
+export const getThicknessByMaterialCode = async (req, res) => {
+  try {
+    const { code } = req.params;
+    const thicknesses = await masterDataService.getThicknessByMaterialCode(code);
+    res.status(200).json({ success: true, message: 'Thicknesses retrieved', data: thicknesses });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to retrieve thicknesses', error: error.message });
+  }
+};
+
+export const getAllMaterialPrices = async (req, res) => {
+  try {
+    const data = await masterDataService.getAllMaterialPrices();
+    res.status(200).json({ success: true, message: 'Material prices retrieved', data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to retrieve material prices', error: error.message });
+  }
+};
+
+export const createMaterialPrice = async (req, res) => {
+  try {
+    const data = await masterDataService.createMaterialPrice(req.body);
+    res.status(201).json({ success: true, message: 'Material price created', data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to create material price', error: error.message });
+  }
+};
+
+export const updateMaterialPrice = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await masterDataService.updateMaterialPrice(id, req.body);
+    res.status(200).json({ success: true, message: 'Material price updated', data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to update material price', error: error.message });
+  }
+};
+
+export const deleteMaterialPrice = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await masterDataService.deleteMaterialPrice(id);
+    res.status(200).json({ success: true, message: 'Material price deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to delete material price', error: error.message });
+  }
+};

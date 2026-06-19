@@ -15,6 +15,11 @@ import {
   ChevronRight,
   Shield,
   Bell,
+  Settings,
+  AlignJustify,
+  Maximize,
+  FileText,
+  ShoppingCart,
 } from 'lucide-react';
 import logo from '@/assets/logo-impepact.svg';
 
@@ -25,6 +30,11 @@ const navItems = [
     to: '/admin',
     icon: LayoutDashboard,
     exact: true,
+  },
+  {
+    label: 'Order Management',
+    to: '/admin/orders',
+    icon: ShoppingCart,
   },
   // ── Master Data group ──
   { type: 'separator', label: 'Master Data' },
@@ -43,10 +53,28 @@ const navItems = [
     to: '/admin/finishing-options',
     icon: Layers,
   },
+
+  { type: 'separator', label: 'Pricing Engine v3' },
   {
-    label: 'Pricing Rules',
-    to: '/admin/pricing-rules',
-    icon: DollarSign,
+    label: 'Ukuran Plano',
+    to: '/admin/plano-types',
+    icon: Maximize,
+  },
+  {
+    label: 'Harga Kertas Plano',
+    to: '/admin/material-prices',
+    icon: FileText,
+  },
+
+  {
+    label: 'Harga CMYK & Blok',
+    to: '/admin/cmyk-blok-prices',
+    icon: AlignJustify,
+  },
+  {
+    label: 'Konfigurasi Harga',
+    to: '/admin/pricing-config',
+    icon: Settings,
   },
   {
     label: 'Bank Accounts',
@@ -121,7 +149,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto custom-scrollbar-dark">
           <p className="text-white/30 text-[10px] font-bold uppercase tracking-widest px-3 mb-3">
             Menu
           </p>
@@ -194,10 +222,13 @@ const AdminNavbar = ({ onToggleSidebar }) => {
   const getPageTitle = () => {
     const path = location.pathname;
     if (path === '/admin') return 'Dashboard';
+    if (path.startsWith('/admin/orders')) return 'Order Management';
     if (path.startsWith('/admin/box-models')) return 'Box Model Management';
     if (path.startsWith('/admin/materials')) return 'Material Management';
     if (path.startsWith('/admin/finishing-options')) return 'Finishing Options';
-    if (path.startsWith('/admin/pricing-rules')) return 'Pricing Rules';
+
+    if (path.startsWith('/admin/cmyk-blok-prices')) return 'Harga CMYK & Blok';
+    if (path.startsWith('/admin/pricing-config')) return 'Konfigurasi Harga';
     if (path.startsWith('/admin/bank-accounts')) return 'Bank Accounts';
     return 'Admin Panel';
   };

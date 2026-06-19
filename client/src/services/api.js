@@ -104,6 +104,12 @@ export const masterDataAPI = {
     return response.json();
   },
 
+  /** Get available thickness options for a material code (from MaterialPrice table) */
+  getThicknessByMaterialCode: async (code) => {
+    const response = await fetch(`${API_BASE_URL}/master-data/materials/code/${code}/thicknesses`);
+    return response.json();
+  },
+
   /** Create new material */
   createMaterial: async (data) => {
     const response = await fetch(`${API_BASE_URL}/master-data/materials`, {
@@ -198,31 +204,24 @@ export const masterDataAPI = {
     return response.json();
   },
 
+
+
   // ==========================================
-  // PRICING RULES — 7-field matrix
+  // CMYK BLOK PRICES
   // ==========================================
 
-  /** Get all active pricing rules */
-  getPricingRules: async () => {
-    const response = await fetch(`${API_BASE_URL}/master-data/pricing-rules`);
+  getCmykBlokPrices: async () => {
+    const response = await fetch(`${API_BASE_URL}/master-data/cmyk-blok-prices`);
     return response.json();
   },
 
-  /** Get all pricing rules incl. inactive - admin */
-  getAllPricingRules: async () => {
-    const response = await fetch(`${API_BASE_URL}/master-data/pricing-rules/all`);
+  getAllCmykBlokPrices: async () => {
+    const response = await fetch(`${API_BASE_URL}/master-data/cmyk-blok-prices/all`);
     return response.json();
   },
 
-  /** Get pricing rule by ID */
-  getPricingRuleById: async (id) => {
-    const response = await fetch(`${API_BASE_URL}/master-data/pricing-rules/${id}`);
-    return response.json();
-  },
-
-  /** Create / upsert pricing rule */
-  createPricingRule: async (data) => {
-    const response = await fetch(`${API_BASE_URL}/master-data/pricing-rules`, {
+  createCmykBlokPrice: async (data) => {
+    const response = await fetch(`${API_BASE_URL}/master-data/cmyk-blok-prices`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -230,9 +229,8 @@ export const masterDataAPI = {
     return response.json();
   },
 
-  /** Update pricing rule by ID */
-  updatePricingRule: async (id, data) => {
-    const response = await fetch(`${API_BASE_URL}/master-data/pricing-rules/${id}`, {
+  updateCmykBlokPrice: async (id, data) => {
+    const response = await fetch(`${API_BASE_URL}/master-data/cmyk-blok-prices/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -240,26 +238,32 @@ export const masterDataAPI = {
     return response.json();
   },
 
-  /** Delete pricing rule */
-  deletePricingRule: async (id) => {
-    const response = await fetch(`${API_BASE_URL}/master-data/pricing-rules/${id}`, {
+  deleteCmykBlokPrice: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/master-data/cmyk-blok-prices/${id}`, {
       method: 'DELETE',
     });
     return response.json();
   },
 
-  /** Toggle pricing rule status */
-  togglePricingRuleStatus: async (id) => {
-    const response = await fetch(`${API_BASE_URL}/master-data/pricing-rules/${id}/toggle`, {
+  toggleCmykBlokPriceStatus: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/master-data/cmyk-blok-prices/${id}/toggle`, {
       method: 'PATCH',
     });
     return response.json();
   },
 
-  /** Lookup harga berdasarkan kombinasi 7 field */
-  lookupPricingRule: async (data) => {
-    const response = await fetch(`${API_BASE_URL}/master-data/pricing-rules/lookup`, {
-      method: 'POST',
+  // ==========================================
+  // PRICING CONFIG
+  // ==========================================
+
+  getPricingConfig: async () => {
+    const response = await fetch(`${API_BASE_URL}/master-data/pricing-config`);
+    return response.json();
+  },
+
+  updatePricingConfig: async (data) => {
+    const response = await fetch(`${API_BASE_URL}/master-data/pricing-config`, {
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
@@ -328,12 +332,77 @@ export const masterDataAPI = {
   // PRICE CALCULATION
   // ==========================================
 
-  /** Calculate order price */
-  calculatePrice: async (orderData) => {
-    const response = await fetch(`${API_BASE_URL}/master-data/calculate-price`, {
+  // ==========================================
+  // PLANO TYPES
+  // ==========================================
+
+  getAllPlanoTypes: async () => {
+    const response = await fetch(`${API_BASE_URL}/master-data/plano-types`);
+    return response.json();
+  },
+
+  createPlanoType: async (data) => {
+    const response = await fetch(`${API_BASE_URL}/master-data/plano-types`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(orderData),
+      body: JSON.stringify(data),
+    });
+    return response.json();
+  },
+
+  updatePlanoType: async (id, data) => {
+    const response = await fetch(`${API_BASE_URL}/master-data/plano-types/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return response.json();
+  },
+
+  deletePlanoType: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/master-data/plano-types/${id}`, {
+      method: 'DELETE',
+    });
+    return response.json();
+  },
+
+  togglePlanoTypeStatus: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/master-data/plano-types/${id}/toggle`, {
+      method: 'PATCH',
+    });
+    return response.json();
+  },
+
+  // ==========================================
+  // MATERIAL PRICES
+  // ==========================================
+
+  getAllMaterialPrices: async () => {
+    const response = await fetch(`${API_BASE_URL}/master-data/material-prices`);
+    return response.json();
+  },
+
+  createMaterialPrice: async (data) => {
+    const response = await fetch(`${API_BASE_URL}/master-data/material-prices`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return response.json();
+  },
+
+  updateMaterialPrice: async (id, data) => {
+    const response = await fetch(`${API_BASE_URL}/master-data/material-prices/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return response.json();
+  },
+
+  deleteMaterialPrice: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/master-data/material-prices/${id}`, {
+      method: 'DELETE',
     });
     return response.json();
   },
