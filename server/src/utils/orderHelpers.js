@@ -126,11 +126,23 @@ export const getPaymentStatusLabel = (status) => {
   return labels[status] || status;
 };
 
-/**
- * Validate order data
- */
-export const validateOrderData = (data) => {
+export const validateOrderData = (rawData) => {
   const errors = [];
+
+  // Normalize data to handle both nested and flat structures
+  const data = {
+    boxModel: rawData.selectedModel || rawData.boxModel,
+    sizePanjang: rawData.sizes?.panjang ? parseFloat(rawData.sizes.panjang) : parseFloat(rawData.sizePanjang),
+    sizeLebar: rawData.sizes?.lebar ? parseFloat(rawData.sizes.lebar) : parseFloat(rawData.sizeLebar),
+    sizeTinggi: rawData.sizes?.tinggi ? parseFloat(rawData.sizes.tinggi) : parseFloat(rawData.sizeTinggi),
+    sizeTinggiTutup: rawData.sizes?.tinggiTutup ? parseFloat(rawData.sizes.tinggiTutup) : (rawData.sizeTinggiTutup ? parseFloat(rawData.sizeTinggiTutup) : null),
+    material: rawData.selectedMaterial || rawData.material,
+    materialThickness: rawData.selectedThickness || rawData.materialThickness,
+    colorSides: rawData.selectedColor || rawData.colorSides || rawData.colorOption,
+    laminationPart: rawData.laminationSide || rawData.laminationPart,
+    laminationType: rawData.laminationType,
+    quantity: parseInt(rawData.quantity),
+  };
 
   // Required fields
   const requiredFields = [
@@ -144,28 +156,31 @@ export const validateOrderData = (data) => {
   ];
 
   for (const field of requiredFields) {
-    if (!data[field]) {
-      errors.push(`${field} is required`);
+    if (!data[field] && data[field] !== 0) { // allow 0 to be caught by size validation later, but check if it's undefined/null/NaN
+      if (isNaN(data[field]) && ['sizePanjang', 'sizeLebar', 'sizeTinggi', 'quantity'].includes(field)) {
+         errors.push(`${field} is required`);
+      } else if (!['sizePanjang', 'sizeLebar', 'sizeTinggi', 'quantity'].includes(field)) {
+         errors.push(`${field} is required`);
+      }
     }
   }
 
   // colorSides atau colorOption wajib ada
-  if (!data.colorSides && !data.colorOption) {
+  if (!data.colorSides) {
     errors.push('colorSides is required');
   }
 
   // laminationSide atau laminationPart wajib ada
-  const laminationPart = data.laminationPart || data.laminationSide;
-  if (!laminationPart) {
+  if (!data.laminationPart) {
     errors.push('laminationSide (or laminationPart) is required');
   }
 
   // Validate laminationType (wajib kecuali jika tanpa-laminasi)
-  if (laminationPart && laminationPart !== 'tanpa-laminasi' && !data.laminationType) {
+  if (data.laminationPart && data.laminationPart !== 'tanpa-laminasi' && !data.laminationType) {
     errors.push('laminationType is required when laminationSide is not tanpa-laminasi');
   }
   // laminationType harus null jika tanpa-laminasi
-  if (laminationPart === 'tanpa-laminasi' && data.laminationType) {
+  if (data.laminationPart === 'tanpa-laminasi' && data.laminationType) {
     errors.push('laminationType must be null when laminationSide is tanpa-laminasi');
   }
 

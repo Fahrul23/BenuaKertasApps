@@ -63,16 +63,16 @@ app.get('/api/health', (req, res) => {
 // ==========================================
 // import categoryRoutes from './routes/category.js';
 // import productRoutes from './routes/product.js';
-// import orderRoutes from './routes/order.js';
+import orderRoutes from './routes/order.routes.js';
 // import galleryRoutes from './routes/gallery.js';
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/master-data', masterDataRoutes);
 app.use('/api/v1/upload', uploadRoutes);
 app.use('/api/v1/calculator', calculatorRoutes);
+app.use('/api/v1/orders', orderRoutes);
 // app.use('/api/categories', categoryRoutes);
 // app.use('/api/products', productRoutes);
-// app.use('/api/orders', orderRoutes);
 // app.use('/api/gallery', galleryRoutes);
 
 // ==========================================

@@ -52,7 +52,7 @@ const Navbar = () => {
               <Link
                 key={link.label}
                 to={link.to}
-                className={`px-5 py-2 rounded-lg font-medium transition-all shadow-md text-sm lg:text-base whitespace-nowrap ${
+                className={`px-5 py-2 rounded-lg font-medium transition-all text-sm lg:text-base whitespace-nowrap ${
                   isActive(link.to)
                     ? 'bg-color-dark text-color-white scale-105'
                     : 'bg-transparent text-color-dark hover:bg-color-dark hover:text-color-white hover:scale-105'
@@ -99,7 +99,7 @@ const Navbar = () => {
               key={link.label}
               to={link.to}
               onClick={() => setMenuOpen(false)}
-              className={`px-4 py-2.5 rounded-lg font-medium text-sm text-center shadow-md transition-all ${
+              className={`px-4 py-2.5 rounded-lg font-medium text-sm text-center transition-all ${
                 isActive(link.to)
                   ? 'bg-color-dark text-color-white scale-105'
                   : 'bg-transparent text-color-dark border border-color-dark hover:bg-color-dark hover:text-color-white'

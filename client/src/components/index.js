@@ -9,3 +9,4 @@ export { default as SelectInput } from './SelectInput';
 export * from './ui';
 export { default as SuccessModal } from './SuccessModal';
 export { default as ErrorModal } from './ErrorModal';
+export { ProtectedRoute } from './ProtectedRoute';

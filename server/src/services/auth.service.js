@@ -4,7 +4,10 @@ import crypto from 'crypto';
 import prisma from '../config/prisma.js';
 import { sendMail } from '../config/mailer.js';
 
-export const registerUser = async ({ name, email, password }) => {
+export const registerUser = async ({ 
+  name, email, password, 
+  phone, province, city, district, postalCode, detailAddress 
+}) => {
   // Cek apakah email sudah terdaftar
   const existingUser = await prisma.user.findUnique({
     where: { email },
@@ -25,6 +28,12 @@ export const registerUser = async ({ name, email, password }) => {
       name,
       email,
       password: hashedPassword,
+      phone,
+      province,
+      city,
+      district,
+      postalCode,
+      detailAddress,
     },
   });
 

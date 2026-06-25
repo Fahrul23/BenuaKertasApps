@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import LoginPage from '@/pages/LoginPage/LoginPage'
+import RegisterPage from '@/pages/RegisterPage/RegisterPage'
 import HomePage from '@/pages/HomePage/HomePage'
 import AdminPage from '@/pages/admin/AdminPage'
 import CustomPackagingPage from '@/pages/CustomPackagingPage/CustomPackagingPage'
@@ -16,7 +17,7 @@ import PricingConfigManagementPage from '@/pages/admin/PricingConfigManagementPa
 import CmykBlokPriceManagementPage from '@/pages/admin/CmykBlokPriceManagementPage'
 import PlanoTypeManagementPage from '@/pages/admin/PlanoTypeManagementPage/PlanoTypeManagementPage'
 import MaterialPriceManagementPage from '@/pages/admin/MaterialPriceManagementPage/MaterialPriceManagementPage'
-import { AdminLayout } from '@/components'
+import { AdminLayout, ProtectedRoute } from '@/components'
 
 const AppRouter = () => {
   return (
@@ -26,28 +27,32 @@ const AppRouter = () => {
 
       {/* Public Routes */}
       <Route path="/login" element={<LoginPage />} />
-
-      {/* Protected Routes - Temporarily bypassed */}
+      <Route path="/register" element={<RegisterPage />} />
       <Route path="/home" element={<HomePage />} />
-      {/* Redirect custom-packaging to custom-order */}
       <Route path="/custom-packaging" element={<Navigate to="/custom-order" replace />} />
       <Route path="/custom-order" element={<CustomOrderPage />} />
-      <Route path="/payment" element={<PaymentPage />} />
-      <Route path="/profile" element={<ProfilePage />} />
+
+      {/* Protected Routes - User */}
+      <Route element={<ProtectedRoute allowedRoles={['USER', 'ADMIN']} />}>
+        <Route path="/payment" element={<PaymentPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+      </Route>
 
       {/* Admin Routes — nested under AdminLayout (custom navbar + sidebar) */}
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<AdminPage />} />
-        <Route path="orders" element={<OrderManagementPage />} />
-        <Route path="box-models" element={<BoxModelManagementPage />} />
-        <Route path="materials" element={<MaterialManagementPage />} />
-        <Route path="finishing-options" element={<FinishingOptionManagementPage />} />
-        <Route path="plano-types" element={<PlanoTypeManagementPage />} />
-        <Route path="material-prices" element={<MaterialPriceManagementPage />} />
+      <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminPage />} />
+          <Route path="orders" element={<OrderManagementPage />} />
+          <Route path="box-models" element={<BoxModelManagementPage />} />
+          <Route path="materials" element={<MaterialManagementPage />} />
+          <Route path="finishing-options" element={<FinishingOptionManagementPage />} />
+          <Route path="plano-types" element={<PlanoTypeManagementPage />} />
+          <Route path="material-prices" element={<MaterialPriceManagementPage />} />
 
-        <Route path="bank-accounts" element={<BankAccountManagementPage />} />
-        <Route path="cmyk-blok-prices" element={<CmykBlokPriceManagementPage />} />
-        <Route path="pricing-config" element={<PricingConfigManagementPage />} />
+          <Route path="bank-accounts" element={<BankAccountManagementPage />} />
+          <Route path="cmyk-blok-prices" element={<CmykBlokPriceManagementPage />} />
+          <Route path="pricing-config" element={<PricingConfigManagementPage />} />
+        </Route>
       </Route>
 
       {/* 404 Fallback */}

@@ -60,7 +60,7 @@ export const NEXT_BUTTON_TEXT = {
   5: 'Unggah File',
   6: 'Tentukan Kuantitas',
   7: 'Review Order',
-  8: 'Lanjut Pembayaran',
+  8: 'Buat Pesanan',
 };
 
 /**

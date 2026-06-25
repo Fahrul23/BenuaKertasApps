@@ -1,5 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+import api from './axios';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
 /**
  * API Service for Master Data
  */
@@ -511,3 +512,62 @@ export const calculatorAPI = {
   },
 };
 
+/**
+ * API Service for Orders
+ */
+export const orderAPI = {
+  /**
+   * Create new order without payment
+   */
+  createOrder: async (data) => {
+    const response = await api.post('/orders', { orderData: data });
+    return response.data;
+  },
+
+  /**
+   * Submit new order along with payment proof
+   */
+  submitOrderWithPayment: async (data) => {
+    const response = await api.post('/orders/with-payment', data);
+    return response.data;
+  },
+
+  /**
+   * Submit payment proof for existing order
+   */
+  submitPaymentProof: async (orderId, data) => {
+    const response = await api.post(`/orders/${orderId}/payment`, data);
+    return response.data;
+  },
+
+  /**
+   * Get user orders
+   */
+  getUserOrders: async (params) => {
+    const response = await api.get('/orders', { params });
+    return response.data;
+  },
+
+  /**
+   * Get all orders (Admin Only)
+   */
+  getAdminOrders: async (params) => {
+    const response = await api.get('/orders/admin/all', { params });
+    return response.data;
+  },
+
+  /**
+   * Update order status (Admin Only)
+   */
+  updateOrderStatus: async (id, data) => {
+    const response = await api.put(`/orders/admin/${id}/status`, data);
+    return response.data;
+  },
+  /**
+   * Complete order (User Only)
+   */
+  completeOrder: async (id) => {
+    const response = await api.put(`/orders/${id}/complete`);
+    return response.data;
+  },
+};

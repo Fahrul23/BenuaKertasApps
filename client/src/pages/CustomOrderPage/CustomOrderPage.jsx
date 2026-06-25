@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Navbar, Footer, Stepper } from '@/components';
+import { Navbar, Footer, Stepper, ErrorModal } from '@/components';
 import { getVisibleSteps, NEXT_BUTTON_TEXT } from './constants';
-import { calculatorAPI, masterDataAPI } from '@/services/api';
+import { calculatorAPI, masterDataAPI, orderAPI } from '@/services/api';
 import ModelStep from './components/ModelStep';
 import SizeStep from './components/SizeStep';
 import MaterialStep from './components/MaterialStep';
@@ -15,6 +16,8 @@ import ReviewStep from './components/ReviewStep';
 
 const CustomOrderPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { token } = useSelector((state) => state.auth);
   const [currentStep, setCurrentStep] = useState(1);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedModel, setSelectedModel] = useState(null);
@@ -33,6 +36,10 @@ const CustomOrderPage = () => {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [note, setNote] = useState('');
   const [quantity, setQuantity] = useState('');
+
+  // Error Modal State
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // ============ PRICING ENGINE STATE ============
   const [pricingData, setPricingData] = useState({
@@ -66,6 +73,42 @@ const CustomOrderPage = () => {
   // Finishing options from API
   const [laminationSideOptions, setLaminationSideOptions] = useState([]);
   const [laminationTypeOptions, setLaminationTypeOptions] = useState([]);
+
+  // Restore order data from location.state if redirected back from login/register
+  useEffect(() => {
+    if (location.state?.orderData) {
+      const {
+        selectedModel: m,
+        sizes: s,
+        selectedMaterial: mat,
+        selectedThickness: thick,
+        selectedColor: col,
+        laminationSide: lSide,
+        laminationType: lType,
+        quantity: q,
+        pricingData: p,
+        note: n,
+        designFile: d
+      } = location.state.orderData;
+
+      if (m) setSelectedModel(m);
+      if (s) setSizes(s);
+      if (mat) setSelectedMaterial(mat);
+      if (thick) setSelectedThickness(thick);
+      if (col) setSelectedColor(col);
+      if (lSide) setLaminationSide(lSide);
+      if (lType) setLaminationType(lType);
+      if (q) setQuantity(q);
+      if (p) setPricingData(p);
+      if (n) setNote(n);
+      if (d) setUploadedFile(d);
+      
+      setCurrentStep(8);
+      
+      // Clear location state after restoring to avoid infinite loop on reload
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
 
   // Fetch Box Models from API
   useEffect(() => {
@@ -138,7 +181,7 @@ const CustomOrderPage = () => {
   }, []);
 
   // ============ AUTO PRICE CALCULATION ============
-  const calculatePricing = useCallback(async () => {
+  const calculatePricing =  (async () => {
     // Need at minimum: boxModel + sizes to start calculating
     if (!selectedModel || !sizes.panjang || !sizes.lebar || !sizes.tinggi) {
       return;
@@ -208,7 +251,7 @@ const CustomOrderPage = () => {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (isEditMode) {
       setCurrentStep(8);
       setIsEditMode(false);
@@ -226,9 +269,34 @@ const CustomOrderPage = () => {
           laminationType,
           quantity,
           pricingData,
-          note
+          note,
+          designFile: uploadedFile
         };
-        navigate('/payment', { state: { orderData } });
+        
+        if (!token) {
+          navigate('/login', { 
+            state: { 
+              from: '/custom-order', 
+              orderData,
+              requireLoginForPayment: true
+            } 
+          });
+        } else {
+          try {
+            // Create order first
+            const result = await orderAPI.createOrder(orderData);
+            if (result.success) {
+              navigate('/payment', { state: { orderData, orderId: result.data.id } });
+            } else {
+              setErrorMessage(result.message || 'Gagal membuat pesanan');
+              setIsErrorModalOpen(true);
+            }
+          } catch (error) {
+            console.error('Create order error:', error);
+            setErrorMessage(error.response?.data?.message || error.message || 'Terjadi kesalahan saat membuat pesanan');
+            setIsErrorModalOpen(true);
+          }
+        }
       }
     }
   };
@@ -467,6 +535,14 @@ const CustomOrderPage = () => {
       </main>
 
       <Footer />
+
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={isErrorModalOpen}
+        title="Gagal Membuat Pesanan!"
+        message={errorMessage}
+        onClose={() => setIsErrorModalOpen(false)}
+      />
     </div>
   );
 };

@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Eye, EyeOff, Printer, Mail, Lock, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react'
+import { Eye, EyeOff, Printer, Mail, Lock, ArrowRight, Loader2, CheckCircle2, X } from 'lucide-react'
 
 import { Button, Input, Label } from '@/components';
 import { login, clearError } from '@/store/slices/authSlice'
@@ -43,11 +43,13 @@ const FeatureBadge = ({ icon: Icon, text, delay }) => (
 // ─── Main Component ───────────────────────────────────────────────────
 export default function LoginPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const dispatch = useDispatch()
   const { loading, error, token, user } = useSelector((state) => state.auth)
 
   const [showPassword, setShowPassword] = useState(false)
   const [loginSuccess, setLoginSuccess] = useState(false)
+  const [showPaymentAlert, setShowPaymentAlert] = useState(location.state?.requireLoginForPayment || false)
 
   const {
     register,
@@ -68,10 +70,11 @@ export default function LoginPage() {
       if (user.role === 'ADMIN') {
         navigate('/admin', { replace: true })
       } else {
-        navigate('/home', { replace: true })
+        const from = location.state?.from || '/home'
+        navigate(from, { replace: true, state: location.state })
       }
     }
-  }, [token, user, navigate])
+  }, [token, user, navigate, location.state])
 
   // Clear error saat unmount
   useEffect(() => {
@@ -89,14 +92,38 @@ export default function LoginPage() {
         if (loggedInUser.role === 'ADMIN') {
           navigate('/admin', { replace: true })
         } else {
-          navigate('/home', { replace: true })
+          const from = location.state?.from || '/home'
+          navigate(from, { replace: true, state: location.state })
         }
       }, 800)
     }
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex relative">
+      {/* ─── Payment Alert Modal ─── */}
+      {showPaymentAlert && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="p-6 md:p-8 text-center">
+              <div className="w-16 h-16 bg-orange-100 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Lock size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Harap Login Dahulu</h3>
+              <p className="text-gray-600 text-sm mb-6">
+                Silakan login (atau daftar akun baru) untuk melanjutkan ke proses pembayaran pesanan Anda. Data pesanan Anda telah kami simpan dengan aman.
+              </p>
+              <Button 
+                onClick={() => setShowPaymentAlert(false)}
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl h-11"
+              >
+                Mengerti
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ═══════════════════════════════════════════════
           LEFT PANEL — Branding & Illustration
       ═══════════════════════════════════════════════ */}
@@ -350,22 +377,20 @@ export default function LoginPage() {
             </div>
             <div className="relative flex justify-center text-xs">
               <span className="bg-background px-4 text-muted-foreground">
-                Belum punya akses?
+                Belum punya akun?
               </span>
             </div>
           </div>
 
-          {/* Contact Admin */}
+          {/* Navigate to Register */}
           <div className="text-center animate-fade-in-up delay-300">
-            <p className="text-sm text-muted-foreground">
-              Hubungi administrator untuk mendapatkan akses.{' '}
-              <a
-                href="mailto:admin@benuakertas.com"
-                className="font-medium text-orange-600 hover:text-orange-700 hover:underline transition-colors"
-              >
-                admin@benuakertas.com
-              </a>
-            </p>
+            <Link
+              to="/register"
+              state={location.state}
+              className="text-sm font-medium text-orange-600 hover:text-orange-700 hover:underline transition-colors"
+            >
+              Daftar akun baru di sini
+            </Link>
           </div>
 
           {/* Footer */}

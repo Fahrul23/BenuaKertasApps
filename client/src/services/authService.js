@@ -11,6 +11,16 @@ export const loginUser = async (credentials) => {
 }
 
 /**
+ * Register user baru.
+ * @param {{ name: string, email: string, password: string }} userData
+ * @returns {Promise<{ user: object }>}
+ */
+export const registerUser = async (userData) => {
+  const response = await api.post('auth/register', userData)
+  return response.data.data
+}
+
+/**
  * Mendapatkan profile user yang sedang login.
  * @returns {Promise<{ id: string, name: string, email: string, role: string }>}
  */

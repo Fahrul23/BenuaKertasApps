@@ -401,6 +401,7 @@ export const getActiveBankAccounts = async () => {
       accountNumber: true,
       accountHolderName: true,
       branch: true,
+      imageUrl: true,
     },
   });
 };
@@ -427,7 +428,7 @@ export const getBankAccountById = async (id) => {
  * Create bank account
  */
 export const createBankAccount = async (data) => {
-  const { bankName, accountNumber, accountHolderName, branch, isActive, displayOrder } = data;
+  const { bankName, accountNumber, accountHolderName, branch, imageUrl, publicId, isActive, displayOrder } = data;
 
   const existing = await prisma.bank_accounts.findFirst({
     where: {
@@ -446,6 +447,8 @@ export const createBankAccount = async (data) => {
       accountNumber,
       accountHolderName,
       branch,
+      imageUrl: imageUrl || null,
+      publicId: publicId || null,
       isActive: isActive !== undefined ? isActive : true,
       displayOrder: displayOrder != null ? parseInt(displayOrder) : 0,
       updatedAt: new Date(),
@@ -464,6 +467,8 @@ export const updateBankAccount = async (id, data) => {
       accountNumber: data.accountNumber,
       accountHolderName: data.accountHolderName,
       branch: data.branch,
+      imageUrl: data.imageUrl !== undefined ? data.imageUrl : undefined,
+      publicId: data.publicId !== undefined ? data.publicId : undefined,
       isActive: data.isActive !== undefined ? data.isActive : true,
       displayOrder: data.displayOrder != null ? parseInt(data.displayOrder) : 0,
       updatedAt: new Date(),

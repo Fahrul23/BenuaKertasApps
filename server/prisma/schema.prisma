@@ -13,6 +13,12 @@ model User {
   email               String         @unique @db.VarChar(255)
   password            String         @db.VarChar(255)
   role                users_role     @default(USER)
+  phone               String?        @db.VarChar(20)
+  province            String?        @db.VarChar(100)
+  city                String?        @db.VarChar(100)
+  district            String?        @db.VarChar(100)
+  postalCode          String?        @db.VarChar(10)
+  detailAddress       String?        @db.Text
   createdAt           DateTime       @default(now())
   resetPasswordExpiry DateTime?
   resetPasswordToken  String?        @db.VarChar(255)
@@ -180,6 +186,14 @@ model Order {
   customerNote            String?              @db.Text
   quantity                Int
 
+  // === Shipping & Contact Fields ===
+  customerPhone           String?              @db.VarChar(20)
+  shippingProvince        String?              @db.VarChar(100)
+  shippingCity            String?              @db.VarChar(100)
+  shippingDistrict        String?              @db.VarChar(100)
+  shippingPostalCode      String?              @db.VarChar(10)
+  shippingDetailAddress   String?              @db.Text
+
   // === Pricing Engine v3 Fields ===
   planoType               String?              @db.VarChar(20)   // "65x100" | "79x109" | "90x120"
   paperWidth              Float?                                  // Lebar kertas hasil formula (cm)
@@ -189,21 +203,10 @@ model Order {
   qtyPlano                Float?                                  // qtyBox ÷ jumlahMata ÷ 500
   qtyRim                  Int?                                    // qtyBox ÷ 500
 
-  // Breakdown harga produksi (v3)
-  hargaKertas             Float?                                  // Dari MaterialPrice lookup
-  hargaCetak              Float?                                  // Dari CmykBlokPrice lookup
-  hargaDrag               Float?                                  // (qty - 1000) × dragPrice
-  hargaPlat               Float?                                  // flat dari CmykBlokPrice
-  hargaPisau              Float?                                  // flat dari PricingConfig
-  hargaPond               Float?                                  // qty × 85
-  hargaPacking            Float?                                  // (qty ÷ 500) × 15000
-  hargaLaminasi           Float?                                  // actualLength × actualWidth × 0.3 × qty
+  // === Total Harga ===
+  totalBayar              Float?                                  // sum semua komponen harga (kalkulasi backend)
   hargaPerPcs             Float?                                  // totalBayar ÷ qty
-
-  // === Total & Legacy fields ===
-  totalBayar              Float?                                  // sum semua komponen harga
   subtotal                Decimal              @db.Decimal(15, 2)
-  tax                     Decimal              @default(0.00) @db.Decimal(15, 2)
   totalAmount             Decimal              @db.Decimal(15, 2)
 
   orderStatus             orders_orderStatus   @default(PENDING)
@@ -249,45 +252,21 @@ model bank_accounts {
   accountNumber     String   @db.VarChar(50)
   accountHolderName String   @db.VarChar(100)
   branch            String?  @db.VarChar(100)
+  imageUrl          String?  @db.VarChar(500)
+  publicId          String?  @db.VarChar(255)
   isActive          Boolean  @default(true)
   displayOrder      Int      @default(0)
   createdAt         DateTime @default(now())
-  updatedAt         DateTime
+  updatedAt         DateTime @updatedAt
 
   @@index([isActive])
 }
 
-model categories {
-  id        Int        @id @default(autoincrement())
-  name      String     @db.VarChar(100)
-  slug      String     @unique @db.VarChar(120)
-  createdAt DateTime   @default(now())
-  products  products[]
-}
 
-model custom_orders {
-  id          Int                  @id @default(autoincrement())
-  name        String               @db.VarChar(100)
-  email       String               @db.VarChar(255)
-  phone       String               @db.VarChar(20)
-  productType String               @db.VarChar(100)
-  quantity    Int
-  notes       String?              @db.Text
-  fileUrl     String?              @db.VarChar(500)
-  status      custom_orders_status @default(PENDING)
-  createdAt   DateTime             @default(now())
-}
 
-model galleries {
-  id        Int      @id @default(autoincrement())
-  title     String   @db.VarChar(200)
-  image     String   @db.VarChar(500)
-  productId Int
-  createdAt DateTime @default(now())
-  products  products @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  @@index([productId])
-}
+
+
 
 model payments {
   id                   Int                    @id @default(autoincrement())
@@ -307,7 +286,7 @@ model payments {
   rejectionReason      String?                @db.Text
   paidAt               DateTime?
   createdAt            DateTime               @default(now())
-  updatedAt            DateTime
+  updatedAt            DateTime               @updatedAt
   orders               Order                  @relation(fields: [orderId], references: [id], onDelete: Cascade)
   users                User?                  @relation(fields: [verifiedBy], references: [id])
 
@@ -317,19 +296,7 @@ model payments {
   @@index([verifiedBy], map: "payments_verifiedBy_fkey")
 }
 
-model products {
-  id          Int         @id @default(autoincrement())
-  name        String      @db.VarChar(200)
-  slug        String      @unique @db.VarChar(220)
-  description String?     @db.Text
-  image       String?     @db.VarChar(500)
-  categoryId  Int
-  createdAt   DateTime    @default(now())
-  galleries   galleries[]
-  categories  categories  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
-  @@index([categoryId])
-}
 
 enum payments_paymentMethod {
   BANK_TRANSFER
@@ -351,12 +318,7 @@ enum order_history_changeType {
   OTHER
 }
 
-enum custom_orders_status {
-  PENDING
-  PROCESSING
-  COMPLETED
-  CANCELLED
-}
+
 
 enum payments_paymentStatus {
   PENDING

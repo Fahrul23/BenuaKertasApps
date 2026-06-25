@@ -184,6 +184,9 @@ export const calculatePrice = async (req, res) => {
       });
     }
 
+    const qtyBox = quantity ? parseInt(quantity) : null;
+
+    // Inisialisasi result — hanya data yang dikirim ke frontend
     const result = {
       paperWidth: Math.round(paperWidth * 100) / 100,
       paperHeight: Math.round(paperHeight * 100) / 100,
@@ -192,67 +195,61 @@ export const calculatePrice = async (req, res) => {
       planoHeight: plano.height,
       jumlahMata: plano.jumlahMata,
       planoOrientation: plano.orientasi,
-      // Pricing components (null until data is available)
       qtyPlano: null,
       qtyRim: null,
-      hargaKertas: null,
-      hargaCetak: null,
-      hargaDrag: null,
-      hargaPlat: null,
-      hargaPisau: null,
-      hargaPond: null,
-      hargaPacking: null,
-      hargaLaminasi: null,
       totalBayar: null,
       hargaPerPcs: null,
     };
 
-    const qtyBox = quantity ? parseInt(quantity) : null;
-
-    // Qty breakdown (jika quantity tersedia)
+    // Qty breakdown
     if (qtyBox) {
       result.qtyPlano = Math.round(hitungQtyPlano(qtyBox, plano.jumlahMata) * 1000) / 1000;
       result.qtyRim = hitungQtyRim(qtyBox);
     }
 
-    // Harga kertas (jika material + thickness tersedia)
+    // Hitung semua komponen harga secara internal (tidak dikembalikan ke frontend)
+    let hargaKertas = null;
+    let hargaCetak = null;
+    let hargaDrag = null;
+    let hargaPlat = null;
+    let hargaPisau = null;
+    let hargaPond = null;
+    let hargaPacking = null;
+    let hargaLaminasi = null;
+
     if (material && materialThickness) {
       try {
-        result.hargaKertas = await hitungHargaKertas(plano.code, material, materialThickness);
+        hargaKertas = await hitungHargaKertas(plano.code, material, materialThickness);
       } catch (err) {
-        result.hargaKertas = null;
         result.hargaKertasError = err.message;
       }
     }
 
-    // Harga cetak, drag, plat (jika thickness tersedia)
     if (materialThickness) {
       try {
-        result.hargaCetak = await hitungHargaCetak(materialThickness);
-        result.hargaPlat = await hitungHargaPlat(materialThickness);
+        hargaCetak = await hitungHargaCetak(materialThickness);
+        hargaPlat = await hitungHargaPlat(materialThickness);
         if (qtyBox) {
-          result.hargaDrag = await hitungHargaDrag(qtyBox, materialThickness);
+          hargaDrag = await hitungHargaDrag(qtyBox, materialThickness);
         }
       } catch (err) {
         result.cmykError = err.message;
       }
     }
 
-    // Harga pisau, pond, packing (jika qty tersedia)
     if (qtyBox) {
       try {
-        result.hargaPisau = await hitungHargaPisau();
-        result.hargaPond = await hitungHargaPond(qtyBox);
-        result.hargaPacking = await hitungHargaPacking(qtyBox);
+        hargaPisau = await hitungHargaPisau();
+        hargaPond = await hitungHargaPond(qtyBox);
+        hargaPacking = await hitungHargaPacking(qtyBox);
       } catch (err) {
         result.fixedCostError = err.message;
       }
     }
 
-    // Harga laminasi (jika laminationSide + qty tersedia)
     if (laminationSide && qtyBox) {
       try {
-        result.hargaLaminasi = await hitungHargaLaminasi(
+        hargaLaminasi = await hitungHargaLaminasi(
           paperWidth, paperHeight, qtyBox, laminationSide
         );
       } catch (err) {
@@ -260,27 +257,27 @@ export const calculatePrice = async (req, res) => {
       }
     }
 
-    // Total (jika semua komponen tersedia)
+    // Hitung total jika semua komponen tersedia
     if (
-      result.hargaKertas !== null &&
-      result.hargaCetak !== null &&
-      result.hargaDrag !== null &&
-      result.hargaPlat !== null &&
-      result.hargaPisau !== null &&
-      result.hargaPond !== null &&
-      result.hargaPacking !== null &&
-      result.hargaLaminasi !== null &&
+      hargaKertas !== null &&
+      hargaCetak !== null &&
+      hargaDrag !== null &&
+      hargaPlat !== null &&
+      hargaPisau !== null &&
+      hargaPond !== null &&
+      hargaPacking !== null &&
+      hargaLaminasi !== null &&
       qtyBox
     ) {
       result.totalBayar =
-        result.hargaKertas +
-        result.hargaCetak +
-        result.hargaDrag +
-        result.hargaPlat +
-        result.hargaPisau +
-        result.hargaPond +
-        result.hargaPacking +
-        result.hargaLaminasi;
+        hargaKertas +
+        hargaCetak +
+        hargaDrag +
+        hargaPlat +
+        hargaPisau +
+        hargaPond +
+        hargaPacking +
+        hargaLaminasi;
       result.hargaPerPcs = Math.round((result.totalBayar / qtyBox) * 100) / 100;
     }
 
