@@ -29,9 +29,13 @@ export const createOrder = async (userId, orderData) => {
   const laminationType = orderData.laminationType || null;
   const quantity = parseInt(orderData.quantity || 0);
   
+  // Ambil lidah (untuk Earlock Box Samping) dan tinggiTutup (untuk Top Bottom Box)
+  const lidah = orderData.sizes?.lidah ? parseFloat(orderData.sizes.lidah) : (orderData.lidah ? parseFloat(orderData.lidah) : null);
+
   const normalizedData = {
     boxModel, sizePanjang, sizeLebar, sizeTinggi, sizeTinggiTutup,
     material, materialThickness, colorOption, laminationSide, laminationType, quantity,
+    lidah, // ← wajib untuk Earlock Box Samping
     colorSides: colorOption, laminationPart: laminationSide
   };
 

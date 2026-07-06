@@ -186,4 +186,15 @@ router.post('/material-prices', masterDataController.createMaterialPrice);
 router.put('/material-prices/:id', masterDataController.updateMaterialPrice);
 router.delete('/material-prices/:id', masterDataController.deleteMaterialPrice);
 
+// ==========================================
+// PLANO TYPES
+// ==========================================
+
+router.get('/plano-types', masterDataController.getActivePlanoTypes);
+router.get('/plano-types/all', masterDataController.getAllPlanoTypes);
+router.post('/plano-types', masterDataController.createPlanoType);
+router.put('/plano-types/:id', masterDataController.updatePlanoType);
+router.delete('/plano-types/:id', masterDataController.deletePlanoType);
+router.patch('/plano-types/:id/toggle', masterDataController.togglePlanoTypeStatus);
+
 export default router;

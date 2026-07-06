@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { logout } from '@/store/slices/authSlice';
 import { Button } from '@/components';
-import { LogOut, ArrowRight, Menu, X } from 'lucide-react';
+import { LogOut, ArrowRight, Menu, X, User } from 'lucide-react';
 import logo from '@/assets/logo-impepact.svg';
 
 const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const { token } = useSelector((state) => state.auth);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = () => {
@@ -64,20 +65,34 @@ const Navbar = () => {
           </div>
 
           {/* Logout */}
-          <button
-            onClick={handleLogout}
-            className="flex flex-col items-center gap-0.5 text-color-dark hover:text-red-600 transition-colors group"
-            aria-label="Logout"
-          >
-            <LogOut size={20} className="group-hover:translate-x-0.5 transition-transform" />
-            <span className="text-[9px] font-bold uppercase tracking-tighter hidden sm:block">Logout</span>
-          </button>
+          {token && (
+            <button
+              onClick={handleLogout}
+              className="flex flex-col items-center gap-0.5 text-color-dark hover:text-red-600 transition-colors group"
+              aria-label="Logout"
+            >
+              <LogOut size={20} className="group-hover:translate-x-0.5 transition-transform" />
+              <span className="text-[9px] font-bold uppercase tracking-tighter hidden sm:block">Logout</span>
+            </button>
+          )}
 
-          {/* Tombol Pesan Sekarang — hidden di xs */}
-          <Button className="hidden sm:flex bg-color-dark hover:bg-color-darker text-color-white rounded-lg px-4 md:px-6 py-4 md:py-5 items-center gap-2 group shadow-lg shadow-green-900/20 text-sm md:text-base">
-            <span className="font-semibold whitespace-nowrap">Pesan Sekarang</span>
-            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-          </Button>
+          {/* Tombol Pesan Sekarang atau Profile — hidden di xs */}
+          {token ? (
+            <Button
+              onClick={() => navigate('/profile')}
+              className="hidden sm:flex bg-color-dark hover:bg-color-darker text-color-white rounded-full w-12 h-12 p-0 items-center justify-center shadow-lg shadow-green-900/20"
+            >
+              <User size={24} />
+            </Button>
+          ) : (
+            <Button
+              onClick={() => navigate('/custom-order')}
+              className="hidden sm:flex bg-color-dark hover:bg-color-darker text-color-white rounded-lg px-4 md:px-6 py-4 md:py-5 items-center gap-2 group shadow-lg shadow-green-900/20 text-sm md:text-base"
+            >
+              <span className="font-semibold whitespace-nowrap">Pesan Sekarang</span>
+              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            </Button>
+          )}
 
           {/* Hamburger — mobile only */}
           <button
@@ -108,21 +123,33 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
-          <Button
-            onClick={() => { handleLogout(); setMenuOpen(false); }}
-            variant="outline"
-            className="border-red-400 text-red-500 hover:bg-red-50 rounded-lg py-4 flex items-center justify-center gap-2"
-          >
-            <LogOut size={16} />
-            <span className="font-semibold">Logout</span>
-          </Button>
-          <Button
-            onClick={() => setMenuOpen(false)}
-            className="bg-color-dark hover:bg-color-darker text-color-white rounded-lg py-5 flex items-center justify-center gap-2 group shadow-lg shadow-green-900/20"
-          >
-            <span className="font-semibold">Pesan Sekarang</span>
-            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-          </Button>
+          {token && (
+            <Button
+              onClick={() => { handleLogout(); setMenuOpen(false); }}
+              variant="outline"
+              className="border-red-400 text-red-500 hover:bg-red-50 rounded-lg py-4 flex items-center justify-center gap-2"
+            >
+              <LogOut size={16} />
+              <span className="font-semibold">Logout</span>
+            </Button>
+          )}
+          {token ? (
+            <Button
+              onClick={() => { navigate('/profile'); setMenuOpen(false); }}
+              className="bg-color-dark hover:bg-color-darker text-color-white rounded-lg py-5 flex items-center justify-center gap-2 shadow-lg shadow-green-900/20"
+            >
+              <User size={18} />
+              <span className="font-semibold">Profile</span>
+            </Button>
+          ) : (
+            <Button
+              onClick={() => { navigate('/custom-order'); setMenuOpen(false); }}
+              className="bg-color-dark hover:bg-color-darker text-color-white rounded-lg py-5 flex items-center justify-center gap-2 group shadow-lg shadow-green-900/20"
+            >
+              <span className="font-semibold">Pesan Sekarang</span>
+              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            </Button>
+          )}
         </div>
       )}
 

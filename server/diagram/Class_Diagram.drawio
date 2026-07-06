@@ -1,0 +1,157 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0">
+  <diagram id="ClassDiagram_BenuaKertas" name="Class Diagram - Benua Kertas">
+    <mxGraphModel dx="2357" dy="2858" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="1700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="t_users" parent="1" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;" value="users" vertex="1">
+          <mxGeometry height="320" width="260" x="130" y="-10" as="geometry" />
+        </mxCell>
+        <mxCell id="fields_users" parent="t_users" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;fontColor=#000000;" value="[PK] id: Int&#xa;[UK] email: String&#xa;name: String&#xa;password: String&#xa;role: Enum (ADMIN, USER)&#xa;phone: String?&#xa;province: String?&#xa;city: String?&#xa;district: String?&#xa;postalCode: String?&#xa;detailAddress: String?&#xa;resetPasswordToken: String?&#xa;resetPasswordExpiry: DateTime?&#xa;createdAt: DateTime&#xa;___________________________&#xa;+ create()&#xa;+ update()&#xa;+ delete()" vertex="1">
+          <mxGeometry height="294" width="260" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="t_orders" parent="1" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;" value="orders" vertex="1">
+          <mxGeometry height="680" width="290" x="680" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="fields_orders" parent="t_orders" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;fontColor=#000000;" value="[PK] id: Int&#xa;[UK] orderNumber: String&#xa;[FK] userId: Int&#xa;boxModel: String&#xa;material: String&#xa;materialThickness: Int&#xa;colorOption: String&#xa;laminationSide: String&#xa;laminationType: String?&#xa;sizePanjang: Decimal&#xa;sizeLebar: Decimal&#xa;sizeTinggi: Decimal&#xa;sizeTinggiTutup: Decimal?&#xa;quantity: Int&#xa;customerPhone: String?&#xa;shippingProvince: String?&#xa;shippingCity: String?&#xa;shippingDistrict: String?&#xa;shippingPostalCode: String?&#xa;shippingDetailAddress: String?&#xa;planoType: String?&#xa;paperWidth: Float?&#xa;paperHeight: Float?&#xa;jumlahMata: Int?&#xa;qtyPlano: Float?&#xa;totalBayar: Float?&#xa;hargaPerPcs: Float?&#xa;subtotal: Decimal&#xa;totalAmount: Decimal&#xa;orderStatus: Enum&#xa;paymentStatus: Enum&#xa;designFileUrl: String?&#xa;estimatedProductionDays: Int&#xa;createdAt: DateTime&#xa;updatedAt: DateTime&#xa;___________________________&#xa;+ create()&#xa;+ update()&#xa;+ delete()" vertex="1">
+          <mxGeometry height="654" width="290" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="t_order_history" parent="1" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;" value="order_history" vertex="1">
+          <mxGeometry height="280" width="255" x="135" y="510" as="geometry" />
+        </mxCell>
+        <mxCell id="fields_order_history" parent="t_order_history" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;fontColor=#000000;" value="[PK] id: Int&#xa;[FK] orderId: Int&#xa;[FK] changedBy: Int?&#xa;previousStatus: String?&#xa;newStatus: String&#xa;changeType: Enum&#xa;notes: String?&#xa;createdAt: DateTime&#xa;___________________________&#xa;+ create()&#xa;+ update()&#xa;+ delete()" vertex="1">
+          <mxGeometry height="254" width="255" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="t_payments" parent="1" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;" value="payments" vertex="1">
+          <mxGeometry height="370" width="260" x="680" y="-610" as="geometry" />
+        </mxCell>
+        <mxCell id="fields_payments" parent="t_payments" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;fontColor=#000000;" value="[PK] id: Int&#xa;[FK] orderId: Int&#xa;[FK] verifiedBy: Int?&#xa;[UK] paymentNumber: String&#xa;paymentMethod: Enum&#xa;bankName: String?&#xa;accountNumber: String?&#xa;accountHolderName: String?&#xa;amount: Decimal&#xa;paymentProofUrl: String?&#xa;paymentStatus: Enum&#xa;rejectionReason: String?&#xa;verifiedAt: DateTime?&#xa;paidAt: DateTime?&#xa;createdAt: DateTime&#xa;updatedAt: DateTime&#xa;___________________________&#xa;+ create()&#xa;+ update()&#xa;+ delete()" vertex="1">
+          <mxGeometry height="344" width="260" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="t_finishing_options" parent="1" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;" value="finishing_options" vertex="1">
+          <mxGeometry height="260" width="255" x="697.5" y="920" as="geometry" />
+        </mxCell>
+        <mxCell id="fields_finishing_options" parent="t_finishing_options" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;fontColor=#000000;" value="[PK] id: Int&#xa;[UK] code: String&#xa;name: String&#xa;description: String?&#xa;imageUrl: String?&#xa;category: String&#xa;isActive: Boolean&#xa;createdAt: DateTime&#xa;updatedAt: DateTime&#xa;___________________________&#xa;+ create()&#xa;+ update()&#xa;+ delete()" vertex="1">
+          <mxGeometry height="234" width="255" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="t_plano_types" parent="1" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;" value="plano_types" vertex="1">
+          <mxGeometry height="260" width="255" x="1750" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="fields_plano_types" parent="t_plano_types" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;fontColor=#000000;" value="[PK] id: Int&#xa;[UK] code: String&#xa;width: Float&#xa;height: Float&#xa;effectiveWidth: Float&#xa;effectiveHeight: Float&#xa;isActive: Boolean&#xa;sortOrder: Int&#xa;createdAt: DateTime&#xa;updatedAt: DateTime&#xa;___________________________&#xa;+ create()&#xa;+ update()&#xa;+ delete()" vertex="1">
+          <mxGeometry height="234" width="255" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_users_orders" edge="1" parent="1" source="t_users" style="endArrow=block;endFill=0;endSize=10;edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;strokeWidth=2;startArrow=oval;startFill=1;strokeColor=#000000;fontColor=#000000;fontStyle=1;" target="t_orders" value="">
+          <mxGeometry relative="1" x="-0.5" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="530" y="130" />
+              <mxPoint x="530" y="130" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel_orders_history" edge="1" parent="1" source="fields_orders" style="endArrow=block;endFill=0;endSize=10;edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;strokeWidth=2;startArrow=oval;startFill=1;strokeColor=#000000;fontColor=#000000;fontStyle=1;exitX=-0.02;exitY=0.877;exitDx=0;exitDy=0;exitPerimeter=0;" value="">
+          <mxGeometry relative="1" x="-0.5" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points" />
+            <mxPoint x="650" y="640" as="sourcePoint" />
+            <mxPoint x="390" y="640" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel_finishing_orders" edge="1" parent="1" style="endArrow=block;endFill=0;endSize=10;edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;strokeWidth=2;startArrow=oval;startFill=1;strokeColor=#000000;fontColor=#000000;fontStyle=1;" target="t_orders" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="825" y="850" />
+              <mxPoint x="825" y="850" />
+            </Array>
+            <mxPoint x="825" y="920" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel_plano_prices" edge="1" parent="1" source="t_plano_types" style="endArrow=block;endFill=0;endSize=10;edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;strokeWidth=2;startArrow=oval;startFill=1;strokeColor=#000000;fontColor=#000000;fontStyle=1;" target="uDtmU2JtukKAV0vTKXBA-10" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1870" y="1060" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uDtmU2JtukKAV0vTKXBA-1" edge="1" parent="1" source="t_orders" style="endArrow=block;endFill=0;endSize=10;edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;strokeWidth=2;startArrow=oval;startFill=1;strokeColor=#000000;fontColor=#000000;fontStyle=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" target="fields_payments" value="">
+          <mxGeometry relative="1" x="-0.5" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="825" y="-150" />
+              <mxPoint x="825" y="-150" />
+            </Array>
+            <mxPoint x="580" y="90" as="sourcePoint" />
+            <mxPoint x="960" y="90" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uDtmU2JtukKAV0vTKXBA-3" edge="1" parent="1" source="t_users" style="endArrow=block;endFill=0;endSize=10;edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;strokeWidth=2;startArrow=oval;startFill=1;strokeColor=#000000;fontColor=#000000;fontStyle=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=-0.002;entryY=0.671;entryDx=0;entryDy=0;entryPerimeter=0;" target="fields_payments" value="">
+          <mxGeometry relative="1" x="-0.5" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="260" y="-353" />
+            </Array>
+            <mxPoint x="169.40999999999997" y="40" as="sourcePoint" />
+            <mxPoint x="169" y="-360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uDtmU2JtukKAV0vTKXBA-5" parent="1" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;" value="materials" vertex="1">
+          <mxGeometry height="250" width="255" x="1285" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="uDtmU2JtukKAV0vTKXBA-6" parent="uDtmU2JtukKAV0vTKXBA-5" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;fontColor=#000000;" value="[PK] id: Int&#xa;[UK] code: String&#xa;name: String&#xa;description: String?&#xa;imageUrl: String?&#xa;isActive: Boolean&#xa;createdAt: DateTime&#xa;updatedAt: DateTime&#xa;___________________________&#xa;+ create()&#xa;+ update()&#xa;+ delete()" vertex="1">
+          <mxGeometry height="224" width="255" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="uDtmU2JtukKAV0vTKXBA-9" parent="1" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;" value="material_prices" vertex="1">
+          <mxGeometry height="240" width="260" x="1280" y="920" as="geometry" />
+        </mxCell>
+        <mxCell id="uDtmU2JtukKAV0vTKXBA-10" parent="uDtmU2JtukKAV0vTKXBA-9" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;fontColor=#000000;" value="[PK] id: Int&#xa;planoCode: String&#xa;materialCode: String&#xa;thickness: Int&#xa;price: Float&#xa;isActive: Boolean&#xa;createdAt: DateTime&#xa;updatedAt: DateTime&#xa;___________________________&#xa;+ create()&#xa;+ update()&#xa;+ delete()" vertex="1">
+          <mxGeometry height="214" width="260" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="uDtmU2JtukKAV0vTKXBA-11" edge="1" parent="1" source="uDtmU2JtukKAV0vTKXBA-6" style="endArrow=block;endFill=0;endSize=10;edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;strokeWidth=2;startArrow=oval;startFill=1;strokeColor=#000000;fontColor=#000000;fontStyle=1;exitX=0.48;exitY=0.999;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitPerimeter=0;" target="uDtmU2JtukKAV0vTKXBA-9" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1410" y="680" />
+            </Array>
+            <mxPoint x="1165" y="950" as="sourcePoint" />
+            <mxPoint x="1175" y="740" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uDtmU2JtukKAV0vTKXBA-13" parent="1" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;fontSize=13;" value="box_models" vertex="1">
+          <mxGeometry height="250" width="255" x="1285" y="-20" as="geometry" />
+        </mxCell>
+        <mxCell id="uDtmU2JtukKAV0vTKXBA-14" parent="uDtmU2JtukKAV0vTKXBA-13" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;overflow=hidden;fontColor=#000000;" value="[PK] id: Int&#xa;[UK] code: String&#xa;name: String&#xa;description: String?&#xa;imageUrl: String?&#xa;isActive: Boolean&#xa;basePrice: Decimal?&#xa;createdAt: DateTime&#xa;updatedAt: DateTime&#xa;___________________________&#xa;+ create()&#xa;+ update()&#xa;+ delete()" vertex="1">
+          <mxGeometry height="224" width="255" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="uDtmU2JtukKAV0vTKXBA-15" edge="1" parent="1" style="endArrow=block;endFill=0;endSize=10;edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;strokeWidth=2;startArrow=oval;startFill=1;strokeColor=#000000;fontColor=#000000;fontStyle=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="260" y="510" />
+              <mxPoint x="260" y="320" />
+            </Array>
+            <mxPoint x="260" y="510" as="sourcePoint" />
+            <mxPoint x="260" y="310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uDtmU2JtukKAV0vTKXBA-16" edge="1" parent="1" style="endArrow=block;endFill=0;endSize=10;edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;strokeWidth=2;startArrow=oval;startFill=1;strokeColor=#000000;fontColor=#000000;fontStyle=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1123" y="610" />
+              <mxPoint x="1123" y="610" />
+            </Array>
+            <mxPoint x="1280" y="610" as="sourcePoint" />
+            <mxPoint x="980" y="610" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="uDtmU2JtukKAV0vTKXBA-17" edge="1" parent="1" style="endArrow=block;endFill=0;endSize=10;edgeStyle=orthogonalEdgeStyle;html=1;rounded=0;strokeWidth=2;startArrow=oval;startFill=1;strokeColor=#000000;fontColor=#000000;fontStyle=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1123" y="130" />
+              <mxPoint x="1123" y="130" />
+            </Array>
+            <mxPoint x="1280" y="130" as="sourcePoint" />
+            <mxPoint x="980" y="130" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

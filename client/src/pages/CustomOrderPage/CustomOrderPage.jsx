@@ -181,7 +181,7 @@ const CustomOrderPage = () => {
   }, []);
 
   // ============ AUTO PRICE CALCULATION ============
-  const calculatePricing =  (async () => {
+  const calculatePricing = useCallback(async () => {
     // Need at minimum: boxModel + sizes to start calculating
     if (!selectedModel || !sizes.panjang || !sizes.lebar || !sizes.tinggi) {
       return;
@@ -286,7 +286,17 @@ const CustomOrderPage = () => {
             // Create order first
             const result = await orderAPI.createOrder(orderData);
             if (result.success) {
-              navigate('/payment', { state: { orderData, orderId: result.data.id } });
+              // Merge totalBayar dari backend ke pricingData agar PaymentPage bisa menampilkan harga yang benar
+              const updatedOrderData = {
+                ...orderData,
+                pricingData: {
+                  ...orderData.pricingData,
+                  totalBayar: result.data.totalBayar || orderData.pricingData?.totalBayar || 0,
+                  hargaPerPcs: result.data.hargaPerPcs || orderData.pricingData?.hargaPerPcs || 0,
+                  totalAmount: result.data.totalAmount || result.data.totalBayar || 0,
+                }
+              };
+              navigate('/payment', { state: { orderData: updatedOrderData, orderId: result.data.id } });
             } else {
               setErrorMessage(result.message || 'Gagal membuat pesanan');
               setIsErrorModalOpen(true);

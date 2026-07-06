@@ -66,21 +66,24 @@ const navItems = [
     icon: FileText,
   },
 
-  {
-    label: 'Harga CMYK & Blok',
-    to: '/admin/cmyk-blok-prices',
-    icon: AlignJustify,
-  },
-  {
-    label: 'Konfigurasi Harga',
-    to: '/admin/pricing-config',
-    icon: Settings,
-  },
-  {
-    label: 'Bank Accounts',
-    to: '/admin/bank-accounts',
-    icon: CreditCard,
-  },
+  // [HIDDEN] Harga CMYK & Blok - uncomment below to re-enable
+  // {
+  //   label: 'Harga CMYK & Blok',
+  //   to: '/admin/cmyk-blok-prices',
+  //   icon: AlignJustify,
+  // },
+  // [HIDDEN] Konfigurasi Harga - uncomment below to re-enable
+  // {
+  //   label: 'Konfigurasi Harga',
+  //   to: '/admin/pricing-config',
+  //   icon: Settings,
+  // },
+  // [HIDDEN] Bank Accounts
+  // {
+  //   label: 'Bank Accounts',
+  //   to: '/admin/bank-accounts',
+  //   icon: CreditCard,
+  // },
 ];
 
 // ── Sidebar Component ────────────────────────────────────────────────────────

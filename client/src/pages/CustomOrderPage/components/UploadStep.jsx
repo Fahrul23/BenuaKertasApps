@@ -30,9 +30,9 @@ const UploadStep = ({ uploadedFile, note, onFileUpload, onNoteChange }) => {
   const handleFileChange = async (file) => {
     if (!file) return;
 
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      setError('Ukuran file melebihi batas 10MB');
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Ukuran file melebihi batas 5MB');
       return;
     }
 
@@ -145,7 +145,7 @@ const UploadStep = ({ uploadedFile, note, onFileUpload, onNoteChange }) => {
                 />
               </label>
               <p className="text-color-gray text-sm mt-2">
-                Format: PDF, JPG, PNG, SVG (Max 10MB)
+                Format: PDF, JPG, PNG, SVG (Max 5MB)
               </p>
             </div>
           ) : (

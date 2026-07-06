@@ -149,9 +149,24 @@ const ProfilePage = () => {
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setUploadedFile(file);
+    if (!file) return;
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMessage('Ukuran file melebihi batas maksimal 5MB. Silakan pilih file yang lebih kecil.');
+      e.target.value = ''; // reset input
+      return;
     }
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      setErrorMessage('Format file tidak didukung. Gunakan JPG, PNG, atau PDF.');
+      e.target.value = ''; // reset input
+      return;
+    }
+
+    setUploadedFile(file);
   };
 
   const submitFinalPayment = async (e) => {

@@ -516,6 +516,13 @@ export const getAllPlanoTypes = async () => {
   });
 };
 
+export const getActivePlanoTypes = async () => {
+  return await prisma.planoType.findMany({
+    where: { isActive: true },
+    orderBy: { sortOrder: 'asc' },
+  });
+};
+
 export const createPlanoType = async (data) => {
   return await prisma.planoType.create({
     data: {
@@ -618,3 +625,4 @@ export const deleteMaterialPrice = async (id) => {
     where: { id: parseInt(id) },
   });
 };
+

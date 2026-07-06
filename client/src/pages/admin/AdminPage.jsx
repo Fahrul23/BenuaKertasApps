@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Box, Package, ArrowRight, TrendingUp, Activity, Layers, DollarSign, CreditCard, Settings, AlignJustify, ShoppingCart } from 'lucide-react';
+import { Box, Package, ArrowRight, TrendingUp, Activity, Layers, DollarSign, CreditCard, ShoppingCart } from 'lucide-react';
 
 const AdminPage = () => {
   const menuCards = [
@@ -58,33 +58,36 @@ const AdminPage = () => {
       gradient: 'from-emerald-600 to-teal-500',
       shadow: 'shadow-emerald-600/25',
     },
-    {
-      id: 'bank-accounts',
-      label: 'Bank Accounts',
-      desc: 'Lihat daftar rekening bank aktif yang ditampilkan ke pelanggan',
-      to: '/admin/bank-accounts',
-      icon: CreditCard,
-      gradient: 'from-slate-700 to-slate-500',
-      shadow: 'shadow-slate-700/25',
-    },
-    {
-      id: 'cmyk-blok-prices',
-      label: 'Harga CMYK & Blok',
-      desc: 'Kelola tarif pencetakan berdasarkan ketebalan kertas',
-      to: '/admin/cmyk-blok-prices',
-      icon: AlignJustify,
-      gradient: 'from-purple-700 to-purple-500',
-      shadow: 'shadow-purple-700/25',
-    },
-    {
-      id: 'pricing-config',
-      label: 'Konfigurasi Harga',
-      desc: 'Atur multiplier pond, harga pisau, multiplier laminasi, dll.',
-      to: '/admin/pricing-config',
-      icon: Settings,
-      gradient: 'from-pink-700 to-pink-500',
-      shadow: 'shadow-pink-700/25',
-    },
+    // [HIDDEN] Bank Accounts
+    // {
+    //   id: 'bank-accounts',
+    //   label: 'Bank Accounts',
+    //   desc: 'Lihat daftar rekening bank aktif yang ditampilkan ke pelanggan',
+    //   to: '/admin/bank-accounts',
+    //   icon: CreditCard,
+    //   gradient: 'from-slate-700 to-slate-500',
+    //   shadow: 'shadow-slate-700/25',
+    // },
+    // [HIDDEN] Harga CMYK & Blok
+    // {
+    //   id: 'cmyk-blok-prices',
+    //   label: 'Harga CMYK & Blok',
+    //   desc: 'Kelola tarif pencetakan berdasarkan ketebalan kertas',
+    //   to: '/admin/cmyk-blok-prices',
+    //   icon: AlignJustify,
+    //   gradient: 'from-purple-700 to-purple-500',
+    //   shadow: 'shadow-purple-700/25',
+    // },
+    // [HIDDEN] Konfigurasi Harga
+    // {
+    //   id: 'pricing-config',
+    //   label: 'Konfigurasi Harga',
+    //   desc: 'Atur multiplier pond, harga pisau, multiplier laminasi, dll.',
+    //   to: '/admin/pricing-config',
+    //   icon: Settings,
+    //   gradient: 'from-pink-700 to-pink-500',
+    //   shadow: 'shadow-pink-700/25',
+    // },
   ];
 
   const stats = [

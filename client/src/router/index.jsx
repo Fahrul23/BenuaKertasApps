@@ -13,8 +13,8 @@ import MaterialManagementPage from '@/pages/admin/MaterialManagementPage/Materia
 import FinishingOptionManagementPage from '@/pages/admin/FinishingOptionManagementPage'
 
 import BankAccountManagementPage from '@/pages/admin/BankAccountManagementPage'
-import PricingConfigManagementPage from '@/pages/admin/PricingConfigManagementPage'
-import CmykBlokPriceManagementPage from '@/pages/admin/CmykBlokPriceManagementPage'
+// [HIDDEN] import PricingConfigManagementPage from '@/pages/admin/PricingConfigManagementPage'
+// [HIDDEN] import CmykBlokPriceManagementPage from '@/pages/admin/CmykBlokPriceManagementPage'
 import PlanoTypeManagementPage from '@/pages/admin/PlanoTypeManagementPage/PlanoTypeManagementPage'
 import MaterialPriceManagementPage from '@/pages/admin/MaterialPriceManagementPage/MaterialPriceManagementPage'
 import { AdminLayout, ProtectedRoute } from '@/components'
@@ -49,9 +49,10 @@ const AppRouter = () => {
           <Route path="plano-types" element={<PlanoTypeManagementPage />} />
           <Route path="material-prices" element={<MaterialPriceManagementPage />} />
 
+          {/* [HIDDEN] <Route path="bank-accounts" element={<BankAccountManagementPage />} /> */}
           <Route path="bank-accounts" element={<BankAccountManagementPage />} />
-          <Route path="cmyk-blok-prices" element={<CmykBlokPriceManagementPage />} />
-          <Route path="pricing-config" element={<PricingConfigManagementPage />} />
+          {/* [HIDDEN] <Route path="cmyk-blok-prices" element={<CmykBlokPriceManagementPage />} /> */}
+          {/* [HIDDEN] <Route path="pricing-config" element={<PricingConfigManagementPage />} /> */}
         </Route>
       </Route>
 

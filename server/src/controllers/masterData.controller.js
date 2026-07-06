@@ -729,6 +729,15 @@ export const getAllPlanoTypes = async (req, res) => {
   }
 };
 
+export const getActivePlanoTypes = async (req, res) => {
+  try {
+    const data = await masterDataService.getActivePlanoTypes();
+    res.status(200).json({ success: true, message: 'Active plano types retrieved', data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to retrieve active plano types', error: error.message });
+  }
+};
+
 export const createPlanoType = async (req, res) => {
   try {
     const data = await masterDataService.createPlanoType(req.body);
@@ -823,3 +832,4 @@ export const deleteMaterialPrice = async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to delete material price', error: error.message });
   }
 };
+
