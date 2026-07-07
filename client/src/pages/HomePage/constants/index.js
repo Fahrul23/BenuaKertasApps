@@ -75,10 +75,10 @@ export const ORDER_PROCESS_DATA = [
 ];
 
 export const FEATURED_PRODUCTS_DATA = [
-    { title: 'Lunch Box', desc: 'Praktis dan elegan untuk berbagai jenis makanan.' },
-    { title: 'Box Terpisah', desc: 'Cocok untuk nasi box khususnya nasi padang.' },
-    { title: 'Lunch Box', desc: 'Praktis dan elegan untuk berbagai jenis makanan.' },
-    { title: 'Lunch Box', desc: 'Praktis dan elegan untuk berbagai jenis makanan.' },
+    { id: 'lunch-box', title: 'Lunch Box', desc: 'Praktis dan elegan untuk berbagai jenis makanan.' },
+    { id: 'tray-box', title: 'Tray Box', desc: 'Kemasan terbuka bergaya untuk kue dan makanan ringan.' },
+    { id: 'clamshell-box', title: 'Clamshell Box', desc: 'Praktis dengan penutup menyatu untuk makanan cepat saji.' },
+    { id: 'top-bottom-box', title: 'Top Bottom Box', desc: 'Kotak premium dengan tutup terpisah yang elegan.' },
 ];
 
 export const FEATURES = [

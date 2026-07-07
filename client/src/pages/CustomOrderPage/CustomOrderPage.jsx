@@ -107,6 +107,11 @@ const CustomOrderPage = () => {
       
       // Clear location state after restoring to avoid infinite loop on reload
       navigate(location.pathname, { replace: true, state: {} });
+    } else if (location.state?.preSelectedModel) {
+      setSelectedModel(location.state.preSelectedModel);
+      setCurrentStep(2);
+      // Clear location state
+      navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state, navigate, location.pathname]);
 
@@ -461,9 +466,14 @@ const CustomOrderPage = () => {
                   <p className="text-white text-sm mb-4">
                     Jika masih ada yang ingin ditanyakan seputar custom packaging Box ini bisa langsung hubungi kami via whatsapp
                   </p>
-                  <button className="bg-white hover:bg-gray-50 text-color-primary font-semibold px-6 py-3 rounded-lg transition-colors duration-300">
+                  <a 
+                    href="https://wa.me/6281212949135" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-block bg-white hover:bg-gray-50 text-color-primary font-semibold px-6 py-3 rounded-lg transition-colors duration-300"
+                  >
                     Konsultasikan sekarang
-                  </button>
+                  </a>
                 </div>
               </div>
 

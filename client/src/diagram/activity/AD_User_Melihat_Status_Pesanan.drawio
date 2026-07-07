@@ -1,0 +1,70 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0">
+  <diagram id="ad_user_status_pesanan" name="Melihat Status Pesanan">
+    <mxGraphModel dx="1000" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- User Lane -->
+        <mxCell id="lane_u" parent="1" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontStyle=1;" value="User" vertex="1">
+          <mxGeometry height="600" width="400" x="40" y="40" as="geometry" />
+        </mxCell>
+        
+        <!-- System Lane -->
+        <mxCell id="lane_s" parent="1" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontStyle=1;" value="System" vertex="1">
+          <mxGeometry height="600" width="400" x="440" y="40" as="geometry" />
+        </mxCell>
+
+        <!-- Nodes -->
+        <mxCell id="start" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="30" width="30" x="225" y="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="act_menu" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;" value="Mengakses Halaman&lt;br&gt;Pesanan Saya" vertex="1">
+          <mxGeometry height="60" width="200" x="140" y="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sys_show_list" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;" value="Menampilkan Daftar Pesanan&lt;br&gt;&amp;amp; Status Singkat" vertex="1">
+          <mxGeometry height="60" width="200" x="540" y="250" as="geometry" />
+        </mxCell>
+
+        <mxCell id="act_select_order" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;" value="Memilih Salah Satu Pesanan" vertex="1">
+          <mxGeometry height="60" width="200" x="140" y="350" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sys_show_detail" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;" value="Menampilkan Detail Pesanan&lt;br&gt;&amp;amp; Status Lengkap" vertex="1">
+          <mxGeometry height="60" width="200" x="540" y="450" as="geometry" />
+        </mxCell>
+
+        <mxCell id="end" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeWidth=2;fillColor=#ffffff;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="40" width="40" x="620" y="550" as="geometry" />
+        </mxCell>
+        <mxCell id="end_in" parent="end" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="24" width="24" x="8" y="8" as="geometry" />
+        </mxCell>
+
+        <!-- Edges -->
+        <mxCell id="e1" edge="1" parent="1" source="start" target="act_menu" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e2" edge="1" parent="1" source="act_menu" target="sys_show_list" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e3" edge="1" parent="1" source="sys_show_list" target="act_select_order" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e4" edge="1" parent="1" source="act_select_order" target="sys_show_detail" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e5" edge="1" parent="1" source="sys_show_detail" target="end" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#000000;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -36,6 +36,7 @@ const AppRouter = () => {
       <Route element={<ProtectedRoute allowedRoles={['USER', 'ADMIN']} />}>
         <Route path="/payment" element={<PaymentPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/orders" element={<ProfilePage />} />
       </Route>
 
       {/* Admin Routes — nested under AdminLayout (custom navbar + sidebar) */}

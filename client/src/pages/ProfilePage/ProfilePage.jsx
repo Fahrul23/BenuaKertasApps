@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '@/store/slices/authSlice';
 import { Navbar, Footer } from '@/components';
 import { 
   Package, CheckCircle, CreditCard, Upload, 
@@ -87,6 +89,10 @@ const OrderProgress = ({ currentStatus }) => {
 
 const ProfilePage = () => {
   const location = useLocation();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
+
   const [orders, setOrders] = useState([]);
   const [boxModels, setBoxModels] = useState([]);
   const [bankAccounts, setBankAccounts] = useState([]);
@@ -241,20 +247,20 @@ const ProfilePage = () => {
                 <div className="w-16 h-16 rounded-full border-2 border-green-700 text-green-700 flex items-center justify-center mb-3">
                   <User size={32} />
                 </div>
-                <h2 className="font-bold text-lg text-gray-900">Nama User</h2>
-                <p className="text-sm text-gray-500">user@gmail.com</p>
+                <h2 className="font-bold text-lg text-gray-900">{user?.name || 'Nama User'}</h2>
+                <p className="text-sm text-gray-500">{user?.email || 'user@gmail.com'}</p>
               </div>
               
               <nav className="flex flex-col gap-2">
-                <Link to="/profile" className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 font-medium transition-colors">
+                <Link to="/profile" className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${location.pathname === '/profile' ? 'bg-green-50/50 text-green-800 border border-green-100' : 'text-gray-600 hover:bg-gray-50'}`}>
                   <User size={20} />
                   <span>Profil Saya</span>
                 </Link>
-                <Link to="/orders" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-green-50/50 text-green-800 font-bold border border-green-100 transition-colors">
+                <Link to="/orders" className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${location.pathname === '/orders' ? 'bg-green-50/50 text-green-800 border border-green-100' : 'text-gray-600 hover:bg-gray-50'}`}>
                   <ShoppingBag size={20} />
                   <span>Pesanan saya</span>
                 </Link>
-                <button className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-red-50 hover:text-red-600 font-medium transition-colors w-full text-left mt-2 border-t border-gray-100 pt-5">
+                <button onClick={() => { dispatch(logout()); navigate('/login'); }} className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-red-50 hover:text-red-600 font-medium transition-colors w-full text-left mt-2 border-t border-gray-100 pt-5">
                   <LogOut size={20} />
                   <span>Keluar</span>
                 </button>
@@ -264,7 +270,40 @@ const ProfilePage = () => {
 
           {/* Main Content */}
           <div className="flex-1 overflow-hidden">
-            {/* Header */}
+            {location.pathname === '/profile' ? (
+              <div className="bg-white border border-gray-200 rounded-xl p-6 md:p-8 shadow-sm">
+                <h1 className="text-2xl font-bold text-gray-900 mb-6">Profil Saya</h1>
+                <div className="flex flex-col md:flex-row gap-8 items-start">
+                  <div className="w-24 h-24 rounded-full border-4 border-green-50 flex items-center justify-center bg-gray-50 text-gray-400 shrink-0">
+                    <User size={48} />
+                  </div>
+                  <div className="flex-1 w-full space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Nama Lengkap</label>
+                        <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-800 font-medium">{user?.name || '-'}</div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+                        <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-800 font-medium">{user?.email || '-'}</div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">No. Telepon</label>
+                        <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-800 font-medium">{user?.phone || '-'}</div>
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Alamat</label>
+                        <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-800 font-medium min-h-[80px]">
+                          {user?.address || '-'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 mb-1">Pesanan Saya</h1>
@@ -558,6 +597,8 @@ const ProfilePage = () => {
                   );
                 })}
               </div>
+            )}
+            </>
             )}
           </div>
         </div>

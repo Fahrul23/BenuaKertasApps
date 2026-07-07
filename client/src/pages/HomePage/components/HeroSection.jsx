@@ -1,10 +1,13 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components';
 import ilustrasiImg from '@/assets/ilustration.svg';
 import leafIconImg from '@/assets/leaf-icon.svg';
 
 const HeroSection = () => {
+    const navigate = useNavigate();
+
     return (
         <section className="w-full bg-color-white overflow-hidden">
             {/* Container tanpa padding & max-width supaya gambar bisa nempel ke kanan browser */}
@@ -44,7 +47,10 @@ const HeroSection = () => {
 
                     {/* CTA Buttons */}
                     <div className="flex items-center gap-4 mt-4 flex-wrap">
-                        <Button iconRight={<ArrowRight size={16} />}>
+                        <Button 
+                            iconRight={<ArrowRight size={16} />}
+                            onClick={() => navigate('/custom-order')}
+                        >
                             Mulai Custom
                         </Button>
                         <Button variant="outline" iconRight={<ArrowRight size={16} />}>

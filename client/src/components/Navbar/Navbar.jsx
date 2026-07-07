@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { logout } from '@/store/slices/authSlice';
 import { Button } from '@/components';
-import { LogOut, ArrowRight, Menu, X, User } from 'lucide-react';
+import { LogOut, ArrowRight, Menu, X, User, LogIn } from 'lucide-react';
 import logo from '@/assets/logo-impepact.svg';
 
 const Navbar = () => {
@@ -76,7 +76,7 @@ const Navbar = () => {
             </button>
           )}
 
-          {/* Tombol Pesan Sekarang atau Profile — hidden di xs */}
+          {/* Tombol Pesan Sekarang atau Profile/Login — hidden di xs */}
           {token ? (
             <Button
               onClick={() => navigate('/profile')}
@@ -85,13 +85,22 @@ const Navbar = () => {
               <User size={24} />
             </Button>
           ) : (
-            <Button
-              onClick={() => navigate('/custom-order')}
-              className="hidden sm:flex bg-color-dark hover:bg-color-darker text-color-white rounded-lg px-4 md:px-6 py-4 md:py-5 items-center gap-2 group shadow-lg shadow-green-900/20 text-sm md:text-base"
-            >
-              <span className="font-semibold whitespace-nowrap">Pesan Sekarang</span>
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-            </Button>
+            <div className="hidden sm:flex items-center gap-2 md:gap-3">
+              <Button
+                onClick={() => navigate('/login')}
+                variant="outline"
+                className="border-2 border-color-dark text-color-dark hover:bg-color-dark hover:text-white rounded-lg px-4 md:px-6 py-4 md:py-5 font-semibold text-sm md:text-base transition-colors"
+              >
+                Login
+              </Button>
+              <Button
+                onClick={() => navigate('/custom-order')}
+                className="bg-color-dark hover:bg-color-darker text-color-white rounded-lg px-4 md:px-6 py-4 md:py-5 flex items-center gap-2 group shadow-lg shadow-green-900/20 text-sm md:text-base"
+              >
+                <span className="font-semibold whitespace-nowrap">Pesan Sekarang</span>
+                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </div>
           )}
 
           {/* Hamburger — mobile only */}
@@ -142,13 +151,23 @@ const Navbar = () => {
               <span className="font-semibold">Profile</span>
             </Button>
           ) : (
-            <Button
-              onClick={() => { navigate('/custom-order'); setMenuOpen(false); }}
-              className="bg-color-dark hover:bg-color-darker text-color-white rounded-lg py-5 flex items-center justify-center gap-2 group shadow-lg shadow-green-900/20"
-            >
-              <span className="font-semibold">Pesan Sekarang</span>
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-            </Button>
+            <div className="flex flex-col gap-3">
+              <Button
+                onClick={() => { navigate('/login'); setMenuOpen(false); }}
+                variant="outline"
+                className="border-2 border-color-dark text-color-dark hover:bg-color-dark hover:text-white rounded-lg py-5 flex items-center justify-center gap-2"
+              >
+                <LogIn size={18} />
+                <span className="font-semibold">Login</span>
+              </Button>
+              <Button
+                onClick={() => { navigate('/custom-order'); setMenuOpen(false); }}
+                className="bg-color-dark hover:bg-color-darker text-color-white rounded-lg py-5 flex items-center justify-center gap-2 group shadow-lg shadow-green-900/20"
+              >
+                <span className="font-semibold">Pesan Sekarang</span>
+                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </div>
           )}
         </div>
       )}

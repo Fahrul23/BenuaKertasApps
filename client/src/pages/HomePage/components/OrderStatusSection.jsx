@@ -1,52 +1,55 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components';
-import searchOrderIcon from '@/assets/search-order.svg';
-import protectedIcon from '@/assets/protected.svg';
+import { Package, ArrowRight, MessageCircle } from 'lucide-react';
 
 const OrderStatusSection = () => {
+    const navigate = useNavigate();
+
     return (
         <section className="w-full px-6 md:px-10 lg:px-16 pb-12">
             <div
-                className="flex flex-col md:flex-row items-center gap-6 md:gap-10 bg-color-white px-6 md:px-8 py-6 md:py-7"
+                className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-10 bg-color-dark px-6 md:px-10 py-8 md:py-10 text-white"
                 style={{
-                    borderRadius: '10px',
-                    boxShadow: '0 0 8px 2px rgba(0, 0, 0, 0.10)',
+                    borderRadius: '16px',
+                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
                 }}
             >
                 {/* ── Kiri: Ikon + Teks ── */}
-                <div className="flex items-center gap-4 w-full md:w-1/2">
+                <div className="flex items-start md:items-center gap-5 w-full md:w-3/5">
                     {/* Icon circle */}
-                    <div className="flex-shrink-0 w-[50px] h-[50px] rounded-full bg-color-lighter flex items-center justify-center">
-                        <img src={searchOrderIcon} alt="Search Order" className="w-9 h-9" />
+                    <div className="flex-shrink-0 w-14 h-14 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                        <Package size={28} className="text-white" />
                     </div>
                     {/* Teks */}
                     <div>
-                        <h3 className="font-semibold text-color-black text-base md:text-base leading-snug">
-                            Cek Status Pesanan Anda
+                        <h3 className="font-bold text-xl md:text-2xl leading-tight mb-2">
+                            Buat Box Custom Anda Sekarang
                         </h3>
-                        <p className="text-color-gray text-xs md:text-sm mt-0.5 leading-relaxed">
-                            Masukkan nomor pesanan atau nomor WhatsApp untuk melihat status produksi.
+                        <p className="text-white/80 text-sm md:text-base leading-relaxed">
+                            Pilih ukuran, bahan, dan desain sesuai dengan kebutuhan brand Anda. Konsultasikan dengan tim ahli kami untuk hasil yang sempurna.
                         </p>
                     </div>
                 </div>
 
-                {/* ── Kanan: Input + Button ── */}
-                <div className="w-full md:w-1/2 flex flex-col gap-2">
-                    <div className="flex items-center gap-3">
-                        <input
-                            type="text"
-                            placeholder="Masukkan nomor pesanan / WhatsApp"
-                            className="flex-1 border border-gray-200 rounded-sm px-4 py-2.5 text-sm text-color-black placeholder-color-gray focus:outline-none focus:ring-2 focus:ring-color-dark/30 focus:border-color-dark transition shadow-[0_0_4px_0_rgba(0,0,0,0.25)]"
-                        />
-                        <Button className="whitespace-nowrap">
-                            Lacak Pesanan
-                        </Button>
-                    </div>
-                    {/* Keterangan keamanan */}
-                    <p className="flex items-center gap-1.5 text-xs text-color-gray">
-                        <img src={protectedIcon} alt="Protected" className="w-3.5 h-3.5" />
-                        Data aman dan hanya dapat diakses oleh pemilik pesanan.
-                    </p>
+                {/* ── Kanan: Actions ── */}
+                <div className="w-full md:w-auto flex flex-col sm:flex-row items-center gap-3 md:gap-4 shrink-0">
+                    <Button 
+                        onClick={() => navigate('/custom-order')}
+                        className="w-full sm:w-auto bg-white text-color-dark hover:bg-gray-100 flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg text-sm md:text-base group"
+                    >
+                        <span>Mulai Pesan</span>
+                        <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                    <a 
+                        href="https://wa.me/6281212949135" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="w-full sm:w-auto border-2 border-white/30 hover:border-white text-white hover:bg-white/10 flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all text-sm md:text-base"
+                    >
+                        <MessageCircle size={18} />
+                        <span>Konsultasi</span>
+                    </a>
                 </div>
             </div>
         </section>
