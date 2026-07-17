@@ -27,6 +27,7 @@ export const createOrder = async (userId, orderData) => {
   const colorOption = orderData.selectedColor || orderData.colorOption || orderData.colorSides;
   const laminationSide = orderData.laminationSide || 'none';
   const laminationType = orderData.laminationType || null;
+  const finishing = orderData.finishing || null;
   const quantity = parseInt(orderData.quantity || 0);
   
   // Ambil lidah (untuk Earlock Box Samping) dan tinggiTutup (untuk Top Bottom Box)
@@ -34,7 +35,7 @@ export const createOrder = async (userId, orderData) => {
 
   const normalizedData = {
     boxModel, sizePanjang, sizeLebar, sizeTinggi, sizeTinggiTutup,
-    material, materialThickness, colorOption, laminationSide, laminationType, quantity,
+    material, materialThickness, colorOption, laminationSide, laminationType, finishing, quantity,
     lidah, // ← wajib untuk Earlock Box Samping
     colorSides: colorOption, laminationPart: laminationSide
   };
@@ -65,6 +66,7 @@ export const createOrder = async (userId, orderData) => {
       colorOption,
       laminationSide,
       laminationType: laminationSide === 'tanpa-laminasi' ? null : laminationType,
+      finishing,
       designFileUrl: orderData.designFile?.url || orderData.designFileUrl || null,
       designFilePublicId: orderData.designFile?.publicId || orderData.designFilePublicId || null,
       designFileName: orderData.designFile?.name || orderData.designFileName || null,

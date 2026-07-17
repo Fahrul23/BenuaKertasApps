@@ -178,6 +178,7 @@ model Order {
   colorOption             String               @db.VarChar(50)
   laminationSide          String               @db.VarChar(50)
   laminationType          String?              @db.VarChar(50)
+  finishing               String?              @db.VarChar(50)
   designFileUrl           String?              @db.VarChar(500)
   designFilePublicId      String?              @db.VarChar(255)
   designFileName          String?              @db.VarChar(255)

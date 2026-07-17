@@ -32,10 +32,11 @@ const CustomOrderPage = () => {
   const [selectedThickness, setSelectedThickness] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
   const [laminationSide, setLaminationSide] = useState(null);
-  const [laminationType, setLaminationType] = useState(null);
+  const [laminationType, setLaminationType] = useState('');
+  const [selectedFinishing, setSelectedFinishing] = useState('');
+  const [quantity, setQuantity] = useState('');
   const [uploadedFile, setUploadedFile] = useState(null);
   const [note, setNote] = useState('');
-  const [quantity, setQuantity] = useState('');
 
   // Error Modal State
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
@@ -210,6 +211,8 @@ const CustomOrderPage = () => {
       if (selectedThickness) requestData.materialThickness = parseInt(selectedThickness);
       if (selectedColor) requestData.colorOption = selectedColor;
       if (laminationSide) requestData.laminationSide = laminationSide;
+      if (laminationType) requestData.laminationType = laminationType;
+      if (selectedFinishing) requestData.finishing = selectedFinishing;
       if (quantity) requestData.quantity = parseInt(quantity);
 
       const result = await calculatorAPI.calculatePrice(requestData);
@@ -225,7 +228,7 @@ const CustomOrderPage = () => {
     } catch (err) {
       setPricingError(err.message);
     }
-  }, [selectedModel, sizes, selectedMaterial, selectedThickness, selectedColor, laminationSide, quantity]);
+  }, [selectedModel, sizes, selectedMaterial, selectedThickness, selectedColor, laminationSide, laminationType, selectedFinishing, quantity]);
 
   // Recalculate pricing when relevant data changes
   useEffect(() => {
@@ -265,17 +268,17 @@ const CustomOrderPage = () => {
         setCurrentStep(currentStep + 1);
       } else if (currentStep === 8) {
         const orderData = {
-          selectedModel,
+          boxModel: selectedModel,
           sizes,
-          selectedMaterial,
-          selectedThickness,
-          selectedColor,
-          laminationSide,
-          laminationType,
-          quantity,
-          pricingData,
-          note,
-          designFile: uploadedFile
+          material: selectedMaterial,
+          materialThickness: parseInt(selectedThickness),
+          colorSides: selectedColor,
+          laminationSide: laminationSide,
+          laminationType: laminationType,
+          finishing: selectedFinishing,
+          quantity: parseInt(quantity),
+          designFile: uploadedFile,
+          note: note
         };
         
         if (!token) {
@@ -435,6 +438,7 @@ const CustomOrderPage = () => {
               selectedColor={selectedColor}
               laminationSide={laminationSide}
               laminationType={laminationType}
+              selectedFinishing={selectedFinishing}
               uploadedFile={uploadedFile}
               quantity={quantity}
               boxData={boxData}
@@ -528,6 +532,8 @@ const CustomOrderPage = () => {
                     typeOptions={laminationTypeOptions}
                     onSideSelect={setLaminationSide}
                     onTypeSelect={setLaminationType}
+                    selectedFinishing={selectedFinishing}
+                    onFinishingChange={setSelectedFinishing}
                   />
                 )}
 

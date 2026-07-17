@@ -20,6 +20,7 @@ const ReviewStep = ({
   selectedColor,
   laminationSide,
   laminationType,
+  selectedFinishing,
   uploadedFile,
   quantity,
   boxData,
@@ -57,9 +58,13 @@ const ReviewStep = ({
   const laminationTypeLabels = { glossy: 'Glossy', doff: 'Doff' };
   const laminationTypeName = laminationType ? laminationTypeLabels[laminationType] || laminationType : null;
 
-  const finishingLabel = laminationTypeName
+  let finishingLabel = laminationTypeName
     ? `${laminationTypeName} (${laminationSideName})`
     : laminationSideName;
+
+  if (selectedFinishing) {
+    finishingLabel += ` + ${selectedFinishing}`;
+  }
 
   const fileName = uploadedFile ? uploadedFile.name : '-';
   const qtyFormatted = quantity ? `${Number(quantity).toLocaleString('id-ID')} pcs` : '-';

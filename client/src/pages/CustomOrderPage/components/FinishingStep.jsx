@@ -47,7 +47,7 @@ const OptionCard = ({ option, selected, onClick }) => (
   </div>
 );
 
-const FinishingStep = ({ laminationSide, laminationType, sideOptions = [], typeOptions = [], onSideSelect, onTypeSelect }) => {
+const FinishingStep = ({ laminationSide, laminationType, sideOptions = [], typeOptions = [], onSideSelect, onTypeSelect, selectedFinishing, onFinishingChange }) => {
   // Tampilkan baris Tipe Laminasi hanya jika sisi sudah dipilih dan bukan tanpa-laminasi
   const showLaminationType = laminationSide !== '' && laminationSide !== null && laminationSide !== 'tanpa-laminasi';
 
@@ -105,6 +105,23 @@ const FinishingStep = ({ laminationSide, laminationType, sideOptions = [], typeO
           )}
         </section>
       )}
+
+      {/* Baris 3: Finishing Tambahan */}
+      <section className="mt-8 transition-all duration-300 animate-in fade-in slide-in-from-bottom-2">
+        <p className="text-color-secondary text-sm font-semibold mb-4">Finishing Tambahan (Opsional)</p>
+        <div className="max-w-md">
+          <input
+            type="text"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-color-secondary focus:border-transparent transition-all"
+            placeholder="Contoh: Poly Emas, Emboss, Spot UV, dll."
+            value={selectedFinishing || ''}
+            onChange={(e) => onFinishingChange(e.target.value)}
+          />
+          <p className="text-xs text-gray-500 mt-2">
+            Biaya tambahan untuk finishing akan dihitung secara manual oleh admin setelah pesanan dibuat.
+          </p>
+        </div>
+      </section>
     </div>
   );
 };
